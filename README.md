@@ -11,7 +11,7 @@ This template inspired by [Telegram Bot Boilerplate](https://github.com/yakovlev
 First rename `.env-sample` file to `.env` and fill in all necessary values.
 
 ```
-BOT_TOKEN="<YOUR_BOT_API_TOKEN>"
+BOT_TOKEN="8933991996:AAEdiFvR5ZNmkuHfTEGxzvDT4lv3HCUE34A"
 ```
 
 ## Start your local server
@@ -26,3 +26,4 @@ yarn dev
 You can fork this template and do the necessary changes you need. Then you when are done with your changes simply goto [vercel git import](https://vercel.com/import/git).
 
 Reference to [this update](https://vercel.com/docs/security/deployment-protection#migrating-to-standard-protection), you need turn off `Vercel Authentication`, Settings => Deployment Protection
+.
