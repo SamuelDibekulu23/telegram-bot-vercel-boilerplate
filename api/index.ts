@@ -1,4 +1,4 @@
- import { Telegraf, Markup, Context } from 'telegraf';
+import { Telegraf, Markup, Context } from 'telegraf';
 import { Update } from 'telegraf/typings/core/types/typegram';
 import * as dotenv from 'dotenv';
 
