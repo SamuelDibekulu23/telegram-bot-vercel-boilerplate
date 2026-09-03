@@ -1,19 +1,14 @@
-import { Telegraf, Markup, Context } from 'telegraf';
-import { Update } from 'telegraf/typings/core/types/typegram';
-import * as dotenv from 'dotenv';
+ const { Telegraf, Markup } = require('telegraf');
+require('dotenv').config();
 
-dotenv.config();
+const bot = new Telegraf(process.env.BOT_TOKEN);
 
-const bot = new Telegraf<Context<Update>>(process.env.BOT_TOKEN!);
-
-// Subject data
 const subjects = {
   natural: ['Biology', 'Chemistry', 'Physics', 'Mathematics'],
   social: ['History', 'Geography', 'Economics', 'English']
 };
 
-// Question bank
-const questions: Record<string, string> = {
+const questions = {
   Biology: 'What is the powerhouse of the cell?',
   Chemistry: 'What is the chemical formula of water?',
   Physics: 'What is the formula for force?',
@@ -24,7 +19,7 @@ const questions: Record<string, string> = {
   English: 'What is a noun?'
 };
 
-const answers: Record<string, string> = {
+const answers = {
   'What is the powerhouse of the cell?': 'Mitochondria',
   'What is the chemical formula of water?': 'H2O',
   'What is the formula for force?': 'F = ma',
@@ -35,20 +30,10 @@ const answers: Record<string, string> = {
   'What is a noun?': 'A noun is a person, place, or thing.'
 };
 
-interface UserState {
-  subject: string;
-  question: string;
-}
+const userState = {};
 
-const userState: Record<number, UserState> = {};
-
-// Start command
 bot.start((ctx) => {
-  const welcome =
-    `Welcome to FineBot—your study companion for Grade 12.\n\n` +
-    `You're not here to be perfect. You're here to prepare.\n\n` +
-    `Choose what you need right now:`;
-
+  const welcome = `Welcome to FineBot—your study companion for Grade 12.\n\nYou're not here to be perfect. You're here to prepare.\n\nChoose what you need right now:`;
   ctx.reply(welcome, Markup.inlineKeyboard([
     [Markup.button.callback('📚 Topics', 'topics')],
     [Markup.button.callback('💬 Buddy', 'buddy')],
@@ -57,7 +42,6 @@ bot.start((ctx) => {
   ]));
 });
 
-// Topics
 bot.action('topics', (ctx) => {
   ctx.reply('Choose your stream:', Markup.inlineKeyboard([
     [Markup.button.callback('🌿 Natural Science', 'natural')],
@@ -67,13 +51,13 @@ bot.action('topics', (ctx) => {
 });
 
 bot.action('natural', (ctx) => {
-  const buttons = subjects.natural.map((sub) => [Markup.button.callback(sub, `subject_${sub}`)]);
+  const buttons = subjects.natural.map(sub => [Markup.button.callback(sub, `subject_${sub}`)]);
   buttons.push([Markup.button.callback('🔙 Back', 'topics')]);
   ctx.reply('Choose a subject:', Markup.inlineKeyboard(buttons));
 });
 
 bot.action('social', (ctx) => {
-  const buttons = subjects.social.map((sub) => [Markup.button.callback(sub, `subject_${sub}`)]);
+  const buttons = subjects.social.map(sub => [Markup.button.callback(sub, `subject_${sub}`)]);
   buttons.push([Markup.button.callback('🔙 Back', 'topics')]);
   ctx.reply('Choose a subject:', Markup.inlineKeyboard(buttons));
 });
@@ -83,7 +67,6 @@ bot.action(/subject_(.+)/, (ctx) => {
   ctx.reply(`You selected ${subject}. Type "practice ${subject}" to get a question.`);
 });
 
-// Buddy
 bot.action('buddy', (ctx) => {
   ctx.reply('How are you feeling right now?', Markup.inlineKeyboard([
     [Markup.button.callback('😊 Happy', 'happy'), Markup.button.callback('😌 Calm', 'calm')],
@@ -94,7 +77,7 @@ bot.action('buddy', (ctx) => {
 });
 
 bot.action(['happy', 'calm', 'stressed', 'frustrated', 'sad', 'neutral'], (ctx) => {
-  const responses: Record<string, string> = {
+  const responses = {
     happy: "I'm glad to hear that! Keep shining ☀️",
     calm: "That's a good place to be. Stay grounded 🌿",
     stressed: "Take a breath. You're carrying a lot—I hear you.",
@@ -105,7 +88,6 @@ bot.action(['happy', 'calm', 'stressed', 'frustrated', 'sad', 'neutral'], (ctx) 
   ctx.reply(responses[ctx.match[0]]);
 });
 
-// Practice
 bot.action('practice', (ctx) => {
   ctx.reply('Which subject do you want to practice?', Markup.inlineKeyboard([
     [Markup.button.callback('Biology', 'bio'), Markup.button.callback('Chemistry', 'chem')],
@@ -117,7 +99,7 @@ bot.action('practice', (ctx) => {
 });
 
 bot.action(['bio', 'chem', 'phys', 'math', 'hist', 'geo', 'eng', 'econ'], (ctx) => {
-  const subjectMap: Record<string, string> = {
+  const subjectMap = {
     bio: 'Biology',
     chem: 'Chemistry',
     phys: 'Physics',
@@ -133,12 +115,10 @@ bot.action(['bio', 'chem', 'phys', 'math', 'hist', 'geo', 'eng', 'econ'], (ctx) 
   userState[ctx.from.id] = { subject, question: q };
 });
 
-// Contact
 bot.action('contact', (ctx) => {
   ctx.reply('You can reach out to us at: finebot.support@gmail.com');
 });
 
-// Back
 bot.action('back', (ctx) => {
   ctx.reply('Going back...', Markup.inlineKeyboard([
     [Markup.button.callback('📚 Topics', 'topics')],
@@ -148,7 +128,6 @@ bot.action('back', (ctx) => {
   ]));
 });
 
-// Text handler
 bot.on('text', (ctx) => {
   const msg = ctx.message.text;
   const user = userState[ctx.from.id];
@@ -167,4 +146,6 @@ bot.on('text', (ctx) => {
   ctx.reply("I'm here for you. Choose an option from the menu to get started.");
 });
 
-export default bot;
+bot.launch();
+
+module.exports = bot;
