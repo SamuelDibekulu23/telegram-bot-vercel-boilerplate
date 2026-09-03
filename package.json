@@ -27,4 +27,8 @@
     "prettier": "prettier --write 'src/**/*.ts'",
     "lint": "tsc --noemit"
   }
+"scripts": {
+  "build": "npx tsc",
+  "start": "node dist/index.js"
+}
 }
