@@ -1,25 +1,30 @@
-const { Telegraf, Markup } = require('telegraf');
-require('dotenv').config();
+ import { Telegraf, Markup, Context } from 'telegraf';
+import { Update } from 'telegraf/typings/core/types/typegram';
+import * as dotenv from 'dotenv';
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
+dotenv.config();
 
+const bot = new Telegraf<Context<Update>>(process.env.BOT_TOKEN!);
+
+// Subject data
 const subjects = {
   natural: ['Biology', 'Chemistry', 'Physics', 'Mathematics'],
   social: ['History', 'Geography', 'Economics', 'English']
 };
 
-const questions = {
-  'Biology': 'What is the powerhouse of the cell?',
-  'Chemistry': 'What is the chemical formula of water?',
-  'Physics': 'What is the formula for force?',
-  'Mathematics': 'What is 5x + 3 = 13?',
-  'History': 'Who was the first emperor of Ethiopia?',
-  'Geography': 'What is the capital of Ethiopia?',
-  'Economics': 'What is inflation?',
-  'English': 'What is a noun?'
+// Question bank
+const questions: Record<string, string> = {
+  Biology: 'What is the powerhouse of the cell?',
+  Chemistry: 'What is the chemical formula of water?',
+  Physics: 'What is the formula for force?',
+  Mathematics: 'What is 5x + 3 = 13?',
+  History: 'Who was the first emperor of Ethiopia?',
+  Geography: 'What is the capital of Ethiopia?',
+  Economics: 'What is inflation?',
+  English: 'What is a noun?'
 };
 
-const answers = {
+const answers: Record<string, string> = {
   'What is the powerhouse of the cell?': 'Mitochondria',
   'What is the chemical formula of water?': 'H2O',
   'What is the formula for force?': 'F = ma',
@@ -30,10 +35,20 @@ const answers = {
   'What is a noun?': 'A noun is a person, place, or thing.'
 };
 
-const userState = {};
+interface UserState {
+  subject: string;
+  question: string;
+}
 
+const userState: Record<number, UserState> = {};
+
+// Start command
 bot.start((ctx) => {
-  const welcome = `Welcome to FineBot—your study companion for Grade 12.\n\nYou're not here to be perfect. You're here to prepare.\n\nChoose what you need right now:`;
+  const welcome =
+    `Welcome to FineBot—your study companion for Grade 12.\n\n` +
+    `You're not here to be perfect. You're here to prepare.\n\n` +
+    `Choose what you need right now:`;
+
   ctx.reply(welcome, Markup.inlineKeyboard([
     [Markup.button.callback('📚 Topics', 'topics')],
     [Markup.button.callback('💬 Buddy', 'buddy')],
@@ -42,6 +57,7 @@ bot.start((ctx) => {
   ]));
 });
 
+// Topics
 bot.action('topics', (ctx) => {
   ctx.reply('Choose your stream:', Markup.inlineKeyboard([
     [Markup.button.callback('🌿 Natural Science', 'natural')],
@@ -51,13 +67,13 @@ bot.action('topics', (ctx) => {
 });
 
 bot.action('natural', (ctx) => {
-  const buttons = subjects.natural.map(sub => [Markup.button.callback(sub, `subject_${sub}`)]);
+  const buttons = subjects.natural.map((sub) => [Markup.button.callback(sub, `subject_${sub}`)]);
   buttons.push([Markup.button.callback('🔙 Back', 'topics')]);
   ctx.reply('Choose a subject:', Markup.inlineKeyboard(buttons));
 });
 
 bot.action('social', (ctx) => {
-  const buttons = subjects.social.map(sub => [Markup.button.callback(sub, `subject_${sub}`)]);
+  const buttons = subjects.social.map((sub) => [Markup.button.callback(sub, `subject_${sub}`)]);
   buttons.push([Markup.button.callback('🔙 Back', 'topics')]);
   ctx.reply('Choose a subject:', Markup.inlineKeyboard(buttons));
 });
@@ -67,6 +83,7 @@ bot.action(/subject_(.+)/, (ctx) => {
   ctx.reply(`You selected ${subject}. Type "practice ${subject}" to get a question.`);
 });
 
+// Buddy
 bot.action('buddy', (ctx) => {
   ctx.reply('How are you feeling right now?', Markup.inlineKeyboard([
     [Markup.button.callback('😊 Happy', 'happy'), Markup.button.callback('😌 Calm', 'calm')],
@@ -77,17 +94,18 @@ bot.action('buddy', (ctx) => {
 });
 
 bot.action(['happy', 'calm', 'stressed', 'frustrated', 'sad', 'neutral'], (ctx) => {
-  const responses = {
-    happy: 'I\'m glad to hear that! Keep shining ☀️',
-    calm: 'That\'s a good place to be. Stay grounded 🌿',
-    stressed: 'Take a breath. You\'re carrying a lot—I hear you.',
-    frustrated: 'It\'s okay to feel this way. You\'re not alone.',
-    sad: 'I\'m here with you. It\'s okay to not be okay.',
-    neutral: 'Sometimes neutral is the best place to be. Keep going.'
+  const responses: Record<string, string> = {
+    happy: "I'm glad to hear that! Keep shining ☀️",
+    calm: "That's a good place to be. Stay grounded 🌿",
+    stressed: "Take a breath. You're carrying a lot—I hear you.",
+    frustrated: "It's okay to feel this way. You're not alone.",
+    sad: "I'm here with you. It's okay to not be okay.",
+    neutral: "Sometimes neutral is the best place to be. Keep going."
   };
   ctx.reply(responses[ctx.match[0]]);
 });
 
+// Practice
 bot.action('practice', (ctx) => {
   ctx.reply('Which subject do you want to practice?', Markup.inlineKeyboard([
     [Markup.button.callback('Biology', 'bio'), Markup.button.callback('Chemistry', 'chem')],
@@ -99,7 +117,7 @@ bot.action('practice', (ctx) => {
 });
 
 bot.action(['bio', 'chem', 'phys', 'math', 'hist', 'geo', 'eng', 'econ'], (ctx) => {
-  const subjectMap = {
+  const subjectMap: Record<string, string> = {
     bio: 'Biology',
     chem: 'Chemistry',
     phys: 'Physics',
@@ -111,14 +129,16 @@ bot.action(['bio', 'chem', 'phys', 'math', 'hist', 'geo', 'eng', 'econ'], (ctx) 
   };
   const subject = subjectMap[ctx.match[0]];
   const q = questions[subject];
-  ctx.reply(`📝 Here is your question:\n\n${q}\n\nType your answer, and I\'ll tell you if you\'re right.`);
+  ctx.reply(`📝 Here is your question:\n\n${q}\n\nType your answer, and I'll tell you if you're right.`);
   userState[ctx.from.id] = { subject, question: q };
 });
 
+// Contact
 bot.action('contact', (ctx) => {
   ctx.reply('You can reach out to us at: finebot.support@gmail.com');
 });
 
+// Back
 bot.action('back', (ctx) => {
   ctx.reply('Going back...', Markup.inlineKeyboard([
     [Markup.button.callback('📚 Topics', 'topics')],
@@ -128,6 +148,7 @@ bot.action('back', (ctx) => {
   ]));
 });
 
+// Text handler
 bot.on('text', (ctx) => {
   const msg = ctx.message.text;
   const user = userState[ctx.from.id];
@@ -143,9 +164,7 @@ bot.on('text', (ctx) => {
     return;
   }
 
-  ctx.reply('I\'m here for you. Choose an option from the menu to get started.');
+  ctx.reply("I'm here for you. Choose an option from the menu to get started.");
 });
 
-bot.launch();
-
-module.exports = bot;
+export default bot;
