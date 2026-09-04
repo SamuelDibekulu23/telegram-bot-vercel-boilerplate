@@ -1,5 +1,4 @@
 const { Telegraf, Markup } = require('telegraf');
-require('dotenv').config();
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
@@ -146,6 +145,12 @@ bot.on('text', (ctx) => {
   ctx.reply("I'm here for you. Choose an option from the menu to get started.");
 });
 
-bot.launch();
-
-module.exports = bot;
+// This is the Vercel handler
+module.exports = async (req, res) => {
+  try {
+    await bot.handleUpdate(req.body, res);
+  } catch (err) {
+    console.error('Error handling update:', err);
+    res.status(200).send('OK');
+  }
+};
