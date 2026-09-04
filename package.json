@@ -4,12 +4,11 @@
   "description": "Telegram Bot on Vercel",
   "main": "api/index.js",
   "engines": {
-    "node": "18.x"
+    "node": "24.x"
   },
   "dependencies": {
     "@vercel/node": "^5.1.16",
-    "telegraf": "^4.16.3",
-    "dotenv": "^16.3.1"
+    "telegraf": "^4.16.3"
   },
   "scripts": {
     "build": "echo 'No build needed'",
