@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "description": "Telegram Bot on Vercel",
   "main": "api/index.js",
+  "engines": {
+    "node": "18.x"
+  },
   "dependencies": {
     "@vercel/node": "^5.1.16",
-    "telegraf": "^4.16.3"
-  },
-  "devDependencies": {
-    "@types/node": "^22.8.6",
-    "typescript": "^5.6.3"
+    "telegraf": "^4.16.3",
+    "dotenv": "^16.3.1"
   },
   "scripts": {
     "build": "echo 'No build needed'",
