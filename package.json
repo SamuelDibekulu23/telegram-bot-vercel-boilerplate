@@ -10,7 +10,6 @@
     "telegraf": "^4.16.3"
   },
   "scripts": {
-    "build": "echo 'No build needed'",
     "start": "node api/index.js"
   }
 }
