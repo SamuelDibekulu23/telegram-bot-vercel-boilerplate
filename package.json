@@ -1,7 +1,7 @@
  {
   "name": "telegram-bot-vercel-boilerplate",
   "version": "1.0.0",
-  "description": "Telegram Bot on Vercel",
+  "description": "FineBot Telegram Bot on Vercel",
   "main": "api/index.js",
   "engines": {
     "node": "24.x"
