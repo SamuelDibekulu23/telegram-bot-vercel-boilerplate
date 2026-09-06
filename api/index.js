@@ -252,7 +252,7 @@ async function showHome(ctx) {
 
   const text =
     `🌟 <b>WELCOME TO FINEBOT</b> 🌟\n\n` +
-    `<b>Grade 12 Mastering Companion</b>\n\n` +
+    `<b>Ethiopian Grade 12 Mastering Buddy</b>\n\n` +
     `Your goal isn't just to memorize.\n` +
     `It's to <b>understand → practice → improve → master.</b>\n\n` +
     `🎯 <i>What do you want to do today?</i>`;
