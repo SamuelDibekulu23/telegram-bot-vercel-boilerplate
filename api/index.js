@@ -1,2879 +1,2487 @@
-const { Telegraf, Markup } = require('telegraf');
+ const { Telegraf, Markup } = require('telegraf');
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-
 // ============================================================
-// FINEBOT
-// Grade 12 Mastering & Problem-Solving Bot
-// ============================================================
-
-
-// ============================================================
-// DEMO ACCESS
+// FINEBOT — GRADE 12 MASTERING COMPANION
+// Clean Core Version
 // ============================================================
 
-// This is a SIMULATED payment system.
-// It does NOT charge real money.
-
-const DEMO_PRICE = 50;
-
-
-// ============================================================
-// SUBJECT DATABASE
-// ============================================================
+// ------------------------------------------------------------
+// DATA
+// ------------------------------------------------------------
 
 const subjects = {
+  biology: {
+    label: '🧬 Biology',
+    units: ['Cell', 'Genetics', 'Human Biology']
+  },
 
-  natural: [
-    {
-      id: 'biology',
-      name: 'Biology',
-      emoji: '🧬'
-    },
+  chemistry: {
+    label: '⚗️ Chemistry',
+    units: [
+      'Atomic Structure',
+      'Chemical Bonding',
+      'Organic Chemistry'
+    ]
+  },
 
-    {
-      id: 'chemistry',
-      name: 'Chemistry',
-      emoji: '⚗️'
-    },
+  physics: {
+    label: '⚡ Physics',
+    units: ['Motion', 'Energy', 'Waves']
+  },
 
-    {
-      id: 'physics',
-      name: 'Physics',
-      emoji: '⚛️'
-    },
+  mathematics: {
+    label: '📐 Mathematics',
+    units: ['Algebra', 'Geometry', 'Calculus']
+  },
 
-    {
-      id: 'mathematics',
-      name: 'Mathematics',
-      emoji: '➗'
-    }
-  ],
+  english: {
+    label: '🇬🇧 English',
+    units: ['Grammar', 'Literature', 'Writing']
+  },
 
-  social: [
-    {
-      id: 'history',
-      name: 'History',
-      emoji: '📜'
-    },
+  history: {
+    label: '🏛️ History',
+    units: [
+      'Ancient Civilizations',
+      'Modern History'
+    ]
+  },
 
-    {
-      id: 'geography',
-      name: 'Geography',
-      emoji: '🌍'
-    },
+  geography: {
+    label: '🌍 Geography',
+    units: [
+      'Physical Geography',
+      'Human Geography'
+    ]
+  },
 
-    {
-      id: 'economics',
-      name: 'Economics',
-      emoji: '📈'
-    },
-
-    {
-      id: 'english',
-      name: 'English',
-      emoji: '🇬🇧'
-    }
-  ]
-
+  economics: {
+    label: '💰 Economics',
+    units: [
+      'Microeconomics',
+      'Macroeconomics'
+    ]
+  }
 };
+// ------------------------------------------------------------
+// LESSONS
+// ------------------------------------------------------------
 
+const lessons = {
+  biology: {
+    Cell: {
+      title: 'The Cell',
+      concepts: [
+        'Cells are the basic structural and functional units of life.',
+        'The nucleus contains genetic material.',
+        'Mitochondria release energy for cellular activities.'
+      ],
+      remember:
+        'Think of the nucleus as the cell\'s control center.'
+    },
 
-// ============================================================
-// ALL SUBJECTS
-// ============================================================
+    Genetics: {
+      title: 'Genetics',
+      concepts: [
+        'Genetics is the study of heredity.',
+        'Genes carry information that influences traits.',
+        'DNA stores genetic information.'
+      ],
+      remember:
+        'Genes are instructions passed from parents to offspring.'
+    },
 
-const allSubjects = [
-  ...subjects.natural,
-  ...subjects.social
+    'Human Biology': {
+      title: 'Human Biology',
+      concepts: [
+        'The human body is made of specialized cells.',
+        'Organ systems work together to maintain life.',
+        'Homeostasis helps maintain stable internal conditions.'
+      ],
+      remember:
+        'Your body works as a connected system.'
+    }
+  },
+
+  chemistry: {
+    'Atomic Structure': {
+      title: 'Atomic Structure',
+      concepts: [
+        'Atoms contain protons, neutrons, and electrons.',
+        'Protons have a positive charge.',
+        'Electrons have a negative charge.'
+      ],
+      remember:
+        'The atomic number tells you the number of protons.'
+    },
+
+    'Chemical Bonding': {
+      title: 'Chemical Bonding',
+      concepts: [
+        'Atoms can bond to become more stable.',
+        'Ionic bonds involve transfer of electrons.',
+        'Covalent bonds involve sharing electrons.'
+      ],
+      remember:
+        'Ionic = transfer. Covalent = sharing.'
+    },
+
+    'Organic Chemistry': {
+      title: 'Organic Chemistry',
+      concepts: [
+        'Organic chemistry mainly studies carbon compounds.',
+        'Carbon can form many different structures.',
+        'Hydrocarbons contain carbon and hydrogen.'
+      ],
+      remember:
+        'Carbon is the foundation of countless organic compounds.'
+    }
+  },
+
+  physics: {
+    Motion: {
+      title: 'Motion',
+      concepts: [
+        'Speed describes how quickly distance is covered.',
+        'Speed = Distance ÷ Time.',
+        'Velocity includes direction as well as speed.'
+      ],
+      remember:
+        'Speed tells you how fast. Velocity tells you how fast and where.'
+    },
+
+    Energy: {
+      title: 'Energy',
+      concepts: [
+        'Energy is the ability to do work.',
+        'Energy can change from one form to another.',
+        'Kinetic energy is associated with motion.'
+      ],
+      remember:
+        'Energy changes form—it does not simply disappear.'
+    },
+
+    Waves: {
+      title: 'Waves',
+      concepts: [
+        'Waves transfer energy.',
+        'Frequency measures cycles per second.',
+        'Wavelength is the distance between corresponding points.'
+      ],
+      remember:
+        'A wave carries energy from one place to another.'
+    }
+  },
+
+  mathematics: {
+    Algebra: {
+      title: 'Algebra',
+      concepts: [
+        'Variables represent unknown values.',
+        'Equations can be solved by performing the same operation on both sides.',
+        'Simplifying expressions makes problems easier to solve.'
+      ],
+      remember:
+        'Whatever you do to one side of an equation, do to the other.'
+    },
+
+    Geometry: {
+      title: 'Geometry',
+      concepts: [
+        'Geometry studies shapes, sizes, and relationships.',
+        'Angles are measured in degrees.',
+        'Area measures the surface inside a shape.'
+      ],
+      remember:
+        'Area is inside. Perimeter is around.'
+    },
+
+    Calculus: {
+      title: 'Calculus',
+      concepts: [
+        'Calculus studies change and accumulation.',
+        'Differentiation measures rates of change.',
+        'Integration can represent accumulation.'
+      ],
+      remember:
+        'Derivative = rate of change. Integral = accumulation.'
+    }
+  },
+
+  english: {
+    Grammar: {
+      title: 'Grammar',
+      concepts: [
+        'Grammar describes how words work together.',
+        'Nouns name people, places, things, or ideas.',
+        'Verbs express actions or states.'
+      ],
+      remember:
+        'Good grammar makes your meaning easier to understand.'
+    },
+
+    Literature: {
+      title: 'Literature',
+      concepts: [
+        'Literature includes works such as poems, stories, and plays.',
+        'Themes communicate deeper ideas.',
+        'Characters help develop the meaning of a story.'
+      ],
+      remember:
+        'Look beyond what happens—ask why it matters.'
+    },
+
+    Writing: {
+      title: 'Writing',
+      concepts: [
+        'Strong writing has a clear purpose.',
+        'Paragraphs should develop one main idea.',
+        'Examples make arguments stronger.'
+      ],
+      remember:
+        'Clear ideas + strong structure = stronger writing.'
+    }
+  },
+
+  history: {
+    'Ancient Civilizations': {
+      title: 'Ancient Civilizations',
+      concepts: [
+        'Ancient societies developed complex political and economic systems.',
+        'Writing helped preserve knowledge.',
+        'Trade connected different communities.'
+      ],
+      remember:
+        'History becomes clearer when you connect people, places, causes, and consequences.'
+    },
+
+    'Modern History': {
+      title: 'Modern History',
+      concepts: [
+        'Modern history includes major political and social changes.',
+        'Wars can transform nations and economies.',
+        'Historical events often have multiple causes.'
+      ],
+      remember:
+        'Always ask: What caused it, and what changed afterward?'
+    }
+  },
+
+  geography: {
+    'Physical Geography': {
+      title: 'Physical Geography',
+      concepts: [
+        'Physical geography studies natural features and processes.',
+        'Mountains, rivers, climate, and soils shape environments.',
+        'Natural processes can change landscapes over time.'
+      ],
+      remember:
+        'Physical geography focuses on the natural world.'
+    },
+
+    'Human Geography': {
+      title: 'Human Geography',
+      concepts: [
+        'Human geography studies people and their relationship with places.',
+        'Population distribution is not uniform.',
+        'Cities develop because of economic and social factors.'
+      ],
+      remember:
+        'Human geography focuses on people, places, and relationships.'
+    }
+  },
+
+  economics: {
+    Microeconomics: {
+      title: 'Microeconomics',
+      concepts: [
+        'Microeconomics studies individuals, households, and firms.',
+        'Supply and demand influence prices.',
+        'Consumers and producers make economic choices.'
+      ],
+      remember:
+        'Micro = smaller economic decisions.'
+    },
+
+    Macroeconomics: {
+      title: 'Macroeconomics',
+      concepts: [
+        'Macroeconomics studies the economy as a whole.',
+        'GDP measures the value of final goods and services produced.',
+        'Inflation means a general rise in prices.'
+      ],
+      remember:
+        'Macro = the big picture of the economy.'
+    }
+  }
+};
+// ------------------------------------------------------------
+// QUESTION BANK — BIOLOGY + CHEMISTRY
+// ------------------------------------------------------------
+
+const questionBank = [
+  {
+    id: 'bio_001',
+    subject: 'biology',
+    unit: 'Cell',
+    question: 'What is the powerhouse of the cell?',
+    options: [
+      'Nucleus',
+      'Mitochondria',
+      'Ribosome',
+      'Golgi apparatus'
+    ],
+    correct: 1,
+    explanation:
+      'Mitochondria produce much of the usable energy needed by the cell.'
+  },
+
+  {
+    id: 'bio_002',
+    subject: 'biology',
+    unit: 'Cell',
+    question:
+      'Which organelle contains most of a cell\'s genetic material?',
+    options: [
+      'Ribosome',
+      'Nucleus',
+      'Golgi apparatus',
+      'Cell wall'
+    ],
+    correct: 1,
+    explanation:
+      'The nucleus contains the cell\'s DNA in eukaryotic cells.'
+  },
+
+  {
+    id: 'chem_001',
+    subject: 'chemistry',
+    unit: 'Atomic Structure',
+    question: 'What is the chemical formula for water?',
+    options: [
+      'H₂O',
+      'CO₂',
+      'NaCl',
+      'HCl'
+    ],
+    correct: 0,
+    explanation:
+      'A water molecule contains two hydrogen atoms and one oxygen atom.'
+  },
+
+  {
+    id: 'chem_002',
+    subject: 'chemistry',
+    unit: 'Atomic Structure',
+    question: 'What is the atomic number of carbon?',
+    options: [
+      '4',
+      '6',
+      '8',
+      '12'
+    ],
+    correct: 1,
+    explanation:
+      'Carbon has six protons, so its atomic number is 6.'
+  },
+  {
+    id: 'phys_001',
+    subject: 'physics',
+    unit: 'Motion',
+    question: 'What is the formula for speed?',
+    options: [
+      'Distance ÷ Time',
+      'Force ÷ Mass',
+      'Work ÷ Time',
+      'Mass ÷ Volume'
+    ],
+    correct: 0,
+    explanation:
+      'Speed is calculated by dividing distance by time.'
+  },
+
+  {
+    id: 'phys_002',
+    subject: 'physics',
+    unit: 'Motion',
+    question: 'What is the SI unit of force?',
+    options: [
+      'Joule',
+      'Watt',
+      'Newton',
+      'Pascal'
+    ],
+    correct: 2,
+    explanation:
+      'Force is measured in Newtons (N).'
+  },
+
+  {
+    id: 'math_001',
+    subject: 'mathematics',
+    unit: 'Algebra',
+    question: 'What is the approximate value of π?',
+    options: [
+      '3.14',
+      '2.71',
+      '1.62',
+      '0.5'
+    ],
+    correct: 0,
+    explanation:
+      'π is approximately 3.14159.'
+  },
+
+  {
+    id: 'math_002',
+    subject: 'mathematics',
+    unit: 'Algebra',
+    question: 'If 5x + 3 = 13, what is x?',
+    options: [
+      '1',
+      '2',
+      '3',
+      '4'
+    ],
+    correct: 1,
+    explanation:
+      'Subtract 3 from both sides: 5x = 10. Then divide by 5: x = 2.'
+  },
+  {
+    id: 'eng_001',
+    subject: 'english',
+    unit: 'Grammar',
+    question: 'What is a noun?',
+    options: [
+      'An action',
+      'A person, place, thing, or idea',
+      'A describing word',
+      'A connector'
+    ],
+    correct: 1,
+    explanation:
+      'A noun names a person, place, thing, or idea.'
+  },
+
+  {
+    id: 'eng_002',
+    subject: 'english',
+    unit: 'Grammar',
+    question: 'What is the past tense of "run"?',
+    options: [
+      'Run',
+      'Ranned',
+      'Ran',
+      'Running'
+    ],
+    correct: 2,
+    explanation:
+      'The past tense of "run" is "ran".'
+  },
+
+  {
+    id: 'hist_001',
+    subject: 'history',
+    unit: 'Modern History',
+    question: 'When did Ethiopia defeat Italy at Adwa?',
+    options: [
+      '1896',
+      '1935',
+      '1941',
+      '1889'
+    ],
+    correct: 0,
+    explanation:
+      'The Battle of Adwa took place in 1896.'
+  },
+
+  {
+    id: 'hist_002',
+    subject: 'history',
+    unit: 'Modern History',
+    question:
+      'Which Ethiopian emperor is associated with the Battle of Adwa?',
+    options: [
+      'Menelik II',
+      'Tewodros II',
+      'Yohannes IV',
+      'Haile Selassie I'
+    ],
+    correct: 0,
+    explanation:
+      'Emperor Menelik II led Ethiopia during the victory at Adwa.'
+  },
+  {
+    id: 'geo_001',
+    subject: 'geography',
+    unit: 'Human Geography',
+    question: 'What is the capital of Ethiopia?',
+    options: [
+      'Adama',
+      'Bahir Dar',
+      'Addis Ababa',
+      'Harar'
+    ],
+    correct: 2,
+    explanation:
+      'Addis Ababa is the capital city of Ethiopia.'
+  },
+
+  {
+    id: 'geo_002',
+    subject: 'geography',
+    unit: 'Physical Geography',
+    question:
+      'Which major river system has its source in Ethiopia?',
+    options: [
+      'Blue Nile',
+      'Congo',
+      'Niger',
+      'Orange'
+    ],
+    correct: 0,
+    explanation:
+      'The Blue Nile rises at Lake Tana in Ethiopia.'
+  },
+
+  {
+    id: 'econ_001',
+    subject: 'economics',
+    unit: 'Macroeconomics',
+    question: 'What is inflation?',
+    options: [
+      'A general rise in prices',
+      'A general fall in prices',
+      'An increase in wages only',
+      'A decrease in taxes'
+    ],
+    correct: 0,
+    explanation:
+      'Inflation is a sustained increase in the general price level.'
+  },
+
+  {
+    id: 'econ_002',
+    subject: 'economics',
+    unit: 'Macroeconomics',
+    question: 'What does GDP stand for?',
+    options: [
+      'Gross Domestic Product',
+      'Global Development Plan',
+      'Government Debt Policy',
+      'General Demand Price'
+    ],
+    correct: 0,
+    explanation:
+      'GDP stands for Gross Domestic Product.'
+  }
 ];
 
-const subjectMap = {};
+// ------------------------------------------------------------
+// END OF QUESTION BANK
+// ------------------------------------------------------------
+// ------------------------------------------------------------
+// USER STATE + CORE HELPERS
+// ------------------------------------------------------------
 
-for (const subject of allSubjects) {
+const users = new Map();
 
-  subjectMap[subject.id] = subject;
+function createUser(userId, firstName = 'Student') {
+  return {
+    id: userId,
+    name: firstName || 'Student',
 
+    xp: 0,
+    streak: 0,
+
+    lessonsCompleted: [],
+    questionsAnswered: 0,
+    correctAnswers: 0,
+
+    mistakes: [],
+
+    currentMode: 'home',
+    currentSubject: null,
+    currentUnit: null,
+
+    practiceQuestions: [],
+    currentQuestionIndex: 0,
+
+    dailyQuestion: null,
+    dailyAnswered: false,
+
+    subjectPerformance: {}
+  };
 }
 
-
-// ============================================================
-// QUESTION DATABASE
-// ============================================================
-//
-// IMPORTANT:
-//
-// Every question has a permanent ID.
-//
-// The practice system will use:
-// subjectId + questionId
-//
-// It will NOT depend on temporary currentQuestion memory.
-// ============================================================
-
-const questions = {
-
-  biology: [
-
-    {
-      id: 'bio_001',
-
-      topic: 'Cell Biology',
-
-      question:
-        'Which organelle is mainly responsible for producing ATP in a eukaryotic cell?',
-
-      options: [
-        'A. Nucleus',
-        'B. Mitochondrion',
-        'C. Ribosome',
-        'D. Golgi apparatus'
-      ],
-
-      answer: 'B',
-
-      explanation:
-        'The mitochondrion is the main site of aerobic cellular respiration and produces most of the ATP used by the cell.'
-    },
-
-
-    {
-      id: 'bio_002',
-
-      topic: 'Genetics',
-
-      question:
-        'A heterozygous tall plant (Tt) is crossed with another heterozygous tall plant (Tt). What percentage of the offspring are expected to be tt?',
-
-      options: [
-        'A. 0%',
-        'B. 25%',
-        'C. 50%',
-        'D. 75%'
-      ],
-
-      answer: 'B',
-
-      explanation:
-        'The cross Tt × Tt produces TT, Tt, Tt and tt. Therefore 1 out of 4 offspring is expected to be tt, which is 25%.'
-    },
-
-
-    {
-      id: 'bio_003',
-
-      topic: 'Photosynthesis',
-
-      question:
-        'Which substance is absorbed from the atmosphere and used during photosynthesis?',
-
-      options: [
-        'A. Oxygen',
-        'B. Nitrogen',
-        'C. Carbon dioxide',
-        'D. Hydrogen'
-      ],
-
-      answer: 'C',
-
-      explanation:
-        'Plants absorb carbon dioxide from the atmosphere and use it with water and light energy to produce glucose during photosynthesis.'
-    }
-
-  ],
-
-
-  chemistry: [
-
-    {
-      id: 'chem_001',
-
-      topic: 'Moles',
-
-      question:
-        'How many moles are present in 18 g of water (H₂O)? Use H = 1 and O = 16.',
-
-      options: [
-        'A. 0.5 mol',
-        'B. 1 mol',
-        'C. 2 mol',
-        'D. 18 mol'
-      ],
-
-      answer: 'B',
-
-      explanation:
-        'The molar mass of H₂O is (2 × 1) + 16 = 18 g/mol. Therefore, moles = mass ÷ molar mass = 18 ÷ 18 = 1 mol.'
-    },
-
-
-    {
-      id: 'chem_002',
-
-      topic: 'Chemical Equations',
-
-      question:
-        'Which equation is correctly balanced for the formation of water?',
-
-      options: [
-        'A. H₂ + O₂ → H₂O',
-        'B. 2H₂ + O₂ → 2H₂O',
-        'C. H₂ + 2O₂ → H₂O',
-        'D. 2H₂ + 2O₂ → H₂O'
-      ],
-
-      answer: 'B',
-
-      explanation:
-        'The balanced equation is 2H₂ + O₂ → 2H₂O. Both sides contain four hydrogen atoms and two oxygen atoms.'
-    },
-
-
-    {
-      id: 'chem_003',
-
-      topic: 'Acids and Bases',
-
-      question:
-        'Which pH value represents a strongly acidic solution?',
-
-      options: [
-        'A. 2',
-        'B. 7',
-        'C. 9',
-        'D. 12'
-      ],
-
-      answer: 'A',
-
-      explanation:
-        'The pH scale runs approximately from 0 to 14. Values below 7 are acidic, and a very low pH such as 2 indicates a strongly acidic solution.'
-    }
-
-  ],
-
-
-  physics: [
-
-    {
-      id: 'phys_001',
-
-      topic: 'Mechanics',
-
-      question:
-        'A car accelerates from rest at 2 m/s² for 5 seconds. What is its final velocity?',
-
-      options: [
-        'A. 2 m/s',
-        'B. 5 m/s',
-        'C. 10 m/s',
-        'D. 20 m/s'
-      ],
-
-      answer: 'C',
-
-      explanation:
-        'Use v = u + at. The car starts from rest, so u = 0. Therefore v = 0 + (2 × 5) = 10 m/s.'
-    },
-
-
-    {
-      id: 'phys_002',
-
-      topic: 'Newton’s Laws',
-
-      question:
-        'A 5 kg object accelerates at 4 m/s². What force acts on the object?',
-
-      options: [
-        'A. 1.25 N',
-        'B. 9 N',
-        'C. 20 N',
-        'D. 25 N'
-      ],
-
-      answer: 'C',
-
-      explanation:
-        'Newton’s second law states F = ma. Therefore F = 5 × 4 = 20 N.'
-    },
-
-
-    {
-      id: 'phys_003',
-
-      topic: 'Speed',
-
-      question:
-        'A student travels 100 metres in 20 seconds. What is the average speed?',
-
-      options: [
-        'A. 2 m/s',
-        'B. 5 m/s',
-        'C. 20 m/s',
-        'D. 2000 m/s'
-      ],
-
-      answer: 'B',
-
-      explanation:
-        'Average speed = distance ÷ time. Therefore 100 ÷ 20 = 5 m/s.'
-    }
-
-  ],
-
-
-  mathematics: [
-
-    {
-      id: 'math_001',
-
-      topic: 'Linear Equations',
-
-      question:
-        'Solve: 5x + 3 = 18',
-
-      options: [
-        'A. x = 2',
-        'B. x = 3',
-        'C. x = 4',
-        'D. x = 5'
-      ],
-
-      answer: 'B',
-
-      explanation:
-        'Subtract 3 from both sides: 5x = 15. Then divide both sides by 5. Therefore x = 3.'
-    },
-
-
-    {
-      id: 'math_002',
-
-      topic: 'Quadratic Equations',
-
-      question:
-        'What are the solutions of x² − 5x + 6 = 0?',
-
-      options: [
-        'A. x = 1 and x = 6',
-        'B. x = 2 and x = 3',
-        'C. x = -2 and x = -3',
-        'D. x = 0 and x = 5'
-      ],
-
-      answer: 'B',
-
-      explanation:
-        'Factor the equation: (x − 2)(x − 3) = 0. Therefore x = 2 or x = 3.'
-    },
-
-
-    {
-      id: 'math_003',
-
-      topic: 'Percentages',
-
-      question:
-        'What is 20% of 150?',
-
-      options: [
-        'A. 20',
-        'B. 25',
-        'C. 30',
-        'D. 35'
-      ],
-
-      answer: 'C',
-
-      explanation:
-        '20% = 20/100 = 0.2. Therefore 0.2 × 150 = 30.'
-    }
-
-  ],
-
-
-  history: [
-
-    {
-      id: 'hist_001',
-
-      topic: 'Ethiopian History',
-
-      question:
-        'Which ancient kingdom was centered around the city of Aksum?',
-
-      options: [
-        'A. Aksumite Kingdom',
-        'B. Mali Empire',
-        'C. Ottoman Empire',
-        'D. Roman Empire'
-      ],
-
-      answer: 'A',
-
-      explanation:
-        'The Aksumite Kingdom was centered in the northern Horn of Africa, with Aksum as its major political and cultural center.'
-    }
-
-  ],
-
-
-  geography: [
-
-    {
-      id: 'geo_001',
-
-      topic: 'Physical Geography',
-
-      question:
-        'What process involves the removal and transportation of soil and rock by water, wind or ice?',
-
-      options: [
-        'A. Condensation',
-        'B. Erosion',
-        'C. Evaporation',
-        'D. Precipitation'
-      ],
-
-      answer: 'B',
-
-      explanation:
-        'Erosion is the removal and transportation of weathered material by moving water, wind, ice or other natural agents.'
-    }
-
-  ],
-
-
-  economics: [
-
-    {
-      id: 'econ_001',
-
-      topic: 'Inflation',
-
-      question:
-        'What generally happens to the purchasing power of money when the overall price level rises?',
-
-      options: [
-        'A. It increases',
-        'B. It decreases',
-        'C. It doubles automatically',
-        'D. It becomes unlimited'
-      ],
-
-      answer: 'B',
-
-      explanation:
-        'When prices rise, the same amount of money can generally purchase fewer goods and services. Therefore purchasing power decreases.'
-    }
-
-  ],
-
-
-  english: [
-
-    {
-      id: 'eng_001',
-
-      topic: 'Grammar',
-
-      question:
-        'Which word is the noun in the sentence: "The student solved the problem quickly."?',
-
-      options: [
-        'A. solved',
-        'B. quickly',
-        'C. student',
-        'D. the'
-      ],
-
-      answer: 'C',
-
-      explanation:
-        'A noun names a person, place, thing or idea. "Student" is the noun in this sentence.'
-    }
-
-  ]
-
-};
-
-
-// ============================================================
-// USER DATA
-// ============================================================
-//
-// This is temporary demo storage.
-// Later we will replace this with a real database.
-// ============================================================
-
-const users = {};
-
-
-// ============================================================
-// GET USER
-// ============================================================
-
-function getUser(userId) {
-
-  if (!users[userId]) {
-
-    users[userId] = {
-
-      unlocked: false,
-
-      score: 0,
-
-      attempted: 0,
-
-      correct: 0,
-
-      streak: 0
-
-    };
-
+function getUser(ctx) {
+  const id = ctx.from?.id;
+
+  if (!id) {
+    throw new Error('Telegram user ID unavailable.');
   }
 
-  return users[userId];
+  if (!users.has(id)) {
+    users.set(
+      id,
+      createUser(
+        id,
+        ctx.from.first_name || 'Student'
+      )
+    );
+  }
 
+  return users.get(id);
 }
 
+function shuffle(array) {
+  return [...array].sort(
+    () => Math.random() - 0.5
+  );
+}
 
-// ============================================================
-// MAIN MENU KEYBOARD
-// ============================================================
+function getAccuracy(user) {
+  if (!user.questionsAnswered) {
+    return 0;
+  }
 
-function mainKeyboard() {
+  return Math.round(
+    (user.correctAnswers /
+      user.questionsAnswered) * 100
+  );
+}
 
+function getSubjectQuestions(subjectKey) {
+  return questionBank.filter(
+    q => q.subject === subjectKey
+  );
+}
+
+function getQuestionsForSubject(
+  subjectKey,
+  count = 5
+) {
+  return shuffle(
+    getSubjectQuestions(subjectKey)
+  ).slice(0, count);
+}
+
+function getMixedQuestions(count = 5) {
+  return shuffle(questionBank).slice(
+    0,
+    count
+  );
+}
+
+function getSmartReviewQuestions(
+  user,
+  count = 5
+) {
+  if (!user.mistakes.length) {
+    return getMixedQuestions(3);
+  }
+
+  return shuffle(user.mistakes).slice(
+    0,
+    count
+  );
+}
+
+function getQuestion(user) {
+  return user.practiceQuestions[
+    user.currentQuestionIndex
+  ];
+}
+
+function getStrongestSubject(user) {
+  const entries = Object.entries(
+    user.subjectPerformance
+  );
+
+  if (!entries.length) {
+    return null;
+  }
+
+  return entries.sort(
+    (a, b) =>
+      b[1].accuracy - a[1].accuracy
+  )[0];
+}
+
+function getWeakestSubject(user) {
+  const entries = Object.entries(
+    user.subjectPerformance
+  );
+
+  if (!entries.length) {
+    return null;
+  }
+
+  return entries.sort(
+    (a, b) =>
+      a[1].accuracy - b[1].accuracy
+  )[0];
+}
+
+function recordAnswer(
+  user,
+  question,
+  selected
+) {
+  user.questionsAnswered++;
+
+  if (!user.subjectPerformance[
+    question.subject
+  ]) {
+    user.subjectPerformance[
+      question.subject
+    ] = {
+      correct: 0,
+      answered: 0,
+      accuracy: 0
+    };
+  }
+
+  const performance =
+    user.subjectPerformance[
+      question.subject
+    ];
+
+  performance.answered++;
+
+  const correct =
+    selected === question.correct;
+
+  if (correct) {
+    user.correctAnswers++;
+    performance.correct++;
+    user.xp += 10;
+  } else {
+    const alreadySaved =
+      user.mistakes.some(
+        q => q.id === question.id
+      );
+
+    if (!alreadySaved) {
+      user.mistakes.push(question);
+    }
+  }
+
+  performance.accuracy =
+    Math.round(
+      (performance.correct /
+        performance.answered) * 100
+    );
+
+  return correct;
+}
+// ------------------------------------------------------------
+// KEYBOARDS
+// ------------------------------------------------------------
+
+function homeKeyboard() {
   return Markup.inlineKeyboard([
-
     [
       Markup.button.callback(
         '📚 Learn',
-        'learn'
-      ),
-
-      Markup.button.callback(
-        '✍️ Practice',
-        'practice'
+        'learn_main'
       )
     ],
-
+    [
+      Markup.button.callback(
+        '✍️ Practice',
+        'practice_main'
+      )
+    ],
     [
       Markup.button.callback(
         '🎯 Daily Challenge',
-        'challenge'
-      ),
-
-      Markup.button.callback(
-        '📊 My Progress',
-        'progress'
+        'daily_main'
       )
     ],
-
+    [
+      Markup.button.callback(
+        '📊 My Progress',
+        'progress_main'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '🧠 Exam Tips',
+        'tips_main'
+      )
+    ],
     [
       Markup.button.callback(
         '💬 Study Buddy',
-        'buddy'
-      ),
-
-      Markup.button.callback(
-        '🧠 Exam Ready',
-        'exam'
+        'buddy_main'
       )
     ],
-
     [
       Markup.button.callback(
         '📞 Support',
-        'contact'
+        'support_main'
       )
     ]
-
   ]);
-
 }
 
-
-// ============================================================
-// HOME
-// ============================================================
-
-async function showHome(ctx) {
-
-  const user =
-    getUser(ctx.from.id);
-
-  const access =
-    user.unlocked
-      ? '🟢 Practice Access: UNLOCKED'
-      : '🔒 Practice Access: LOCKED';
-
-  const message =
-
-`🌟 <b>FINEBOT</b>
-
-🎓 <b>Grade 12 Mastering Companion</b>
-
-Learn.
-Practice.
-Understand.
-Improve.
-
-━━━━━━━━━━━━━━━━
-
-${access}
-
-<i>Your goal isn't to memorize everything.
-Your goal is to understand how to solve it.</i>
-
-<b>What do you want to do?</b> 👇`;
-
-  if (ctx.callbackQuery) {
-
-    await ctx.editMessageText(
-
-      message,
-
-      {
-        parse_mode: 'HTML',
-        ...mainKeyboard()
-      }
-
-    );
-
-  } else {
-
-    await ctx.replyWithHTML(
-
-      message,
-
-      mainKeyboard()
-
-    );
-
-  }
-
-}
-
-
-// ============================================================
-// START
-// ============================================================
-
-bot.start(async (ctx) => {
-
-  getUser(ctx.from.id);
-
-  await showHome(ctx);
-
-});
-
-
-// ============================================================
-// HOME BUTTON
-// ============================================================
-
-bot.action('home', async (ctx) => {
-
-  await ctx.answerCbQuery();
-
-  await showHome(ctx);
-
-});
-
-
-// ============================================================
-// PRACTICE ACCESS SCREEN
-// ============================================================
-
-bot.action('practice', async (ctx) => {
-
-  await ctx.answerCbQuery();
-
-  const user =
-    getUser(ctx.from.id);
-
-
-  // Already unlocked
-  if (user.unlocked) {
-
-    return showPracticeMenu(ctx);
-
-  }
-
-
-  // Locked
-  await ctx.editMessageText(
-
-`🔒 <b>FINEBOT PRACTICE</b>
-
-Your problem-solving arena is waiting.
-
-Unlock full practice access for:
-
-💰 <b>${DEMO_PRICE} ETB</b>
-
-━━━━━━━━━━━━━━━━
-
-🎯 Practice Grade 12 questions
-
-🧠 Get instant explanations
-
-📊 Track your performance
-
-🔥 Build your confidence
-
-🎓 Prepare smarter
-
-━━━━━━━━━━━━━━━━
-
-⚠️ <i>This is a simulated payment for testing.
-No real money will be charged.</i>`,
-
-    {
-      parse_mode: 'HTML',
-
-      ...Markup.inlineKeyboard([
-
-        [
-          Markup.button.callback(
-            `🔓 Unlock — ${DEMO_PRICE} ETB`,
-            'unlock_50'
-          )
-        ],
-
-        [
-          Markup.button.callback(
-            '🏠 Main Menu',
-            'home'
-          )
-        ]
-
-      ])
-    }
-
-  );
-
-});
-
-
-// ============================================================
-// SIMULATED PAYMENT
-// ============================================================
-
-bot.action('unlock_50', async (ctx) => {
-
-  await ctx.answerCbQuery();
-
-  await ctx.editMessageText(
-
-`💳 <b>SIMULATED CHECKOUT</b>
-
-FineBot Practice Access
-
-━━━━━━━━━━━━━━━━
-
-💰 Amount: <b>${DEMO_PRICE} ETB</b>
-
-🧾 Product:
-<b>Grade 12 Practice Access</b>
-
-━━━━━━━━━━━━━━━━
-
-Choose a demo payment method 👇
-
-<i>No real payment will be processed.</i>`,
-
-    {
-      parse_mode: 'HTML',
-
-      ...Markup.inlineKeyboard([
-
-        [
-          Markup.button.callback(
-            '📱 Telebirr — Demo',
-            'demo_pay_telebirr'
-          )
-        ],
-
-        [
-          Markup.button.callback(
-            '🏦 CBE — Demo',
-            'demo_pay_cbe'
-          )
-        ],
-
-        [
-          Markup.button.callback(
-            '❌ Cancel',
-            'home'
-          )
-        ]
-
-      ])
-    }
-
-  );
-
-});
-
-
-// ============================================================
-// DEMO PAYMENT CONFIRMATION
-// ============================================================
-
-bot.action(
-  ['demo_pay_telebirr', 'demo_pay_cbe'],
-  async (ctx) => {
-
-    await ctx.answerCbQuery();
-
-    const method =
-      ctx.match[0] === 'demo_pay_telebirr'
-        ? 'Telebirr'
-        : 'CBE';
-
-    await ctx.editMessageText(
-
-`💳 <b>${method.toUpperCase()} — DEMO PAYMENT</b>
-
-Amount:
-
-💰 <b>${DEMO_PRICE} ETB</b>
-
-━━━━━━━━━━━━━━━━
-
-This is a simulated transaction.
-
-Press the button below to simulate a successful payment.`,
-
-      {
-        parse_mode: 'HTML',
-
-        ...Markup.inlineKeyboard([
-
-          [
-            Markup.button.callback(
-              '✅ Simulate Successful Payment',
-              `demo_success_${method.toLowerCase()}`
-            )
-          ],
-
-          [
-            Markup.button.callback(
-              '❌ Cancel',
-              'home'
-            )
-          ]
-
-        ])
-      }
-
-    );
-
-  }
-);
-
-
-// ============================================================
-// SIMULATED SUCCESS
-// ============================================================
-
-bot.action(
-  /demo_success_(telebirr|cbe)/,
-  async (ctx) => {
-
-    await ctx.answerCbQuery(
-      'Payment simulated successfully!'
-    );
-
-    const user =
-      getUser(ctx.from.id);
-
-    user.unlocked = true;
-
-    await ctx.editMessageText(
-
-`🎉 <b>ACCESS UNLOCKED!</b>
-
-Your simulated payment was successful.
-
-━━━━━━━━━━━━━━━━
-
-💰 Paid: <b>${DEMO_PRICE} ETB</b>
-
-🔓 Practice: <b>UNLOCKED</b>
-
-🎯 Status: <b>READY</b>
-
-━━━━━━━━━━━━━━━━
-
-You're ready to start solving.
-
-No memorizing.
-No guessing.
-
-<b>Let's see what you really understand. 🧠</b>`,
-
-      {
-        parse_mode: 'HTML',
-
-        ...Markup.inlineKeyboard([
-
-          [
-            Markup.button.callback(
-              '🚀 Start Practicing',
-              'practice_menu'
-            )
-          ],
-
-          [
-            Markup.button.callback(
-              '🏠 Main Menu',
-              'home'
-            )
-          ]
-
-        ])
-      }
-
-    );
-
-  }
-);
-
-
-// ============================================================
-// PRACTICE MENU
-// ============================================================
-
-async function showPracticeMenu(ctx) {
-
-  await ctx.editMessageText(
-
-`✍️ <b>PRACTICE ARENA</b>
-
-🔓 <b>Access Unlocked</b>
-
-Choose your subject.
-
-Each session is designed to make you think — not just memorize. 🧠`,
-
-    {
-      parse_mode: 'HTML',
-
-      ...Markup.inlineKeyboard([
-
-        [
-          Markup.button.callback(
-            '🧬 Biology',
-            'start_biology'
-          ),
-
-          Markup.button.callback(
-            '⚗️ Chemistry',
-            'start_chemistry'
-          )
-        ],
-
-        [
-          Markup.button.callback(
-            '⚛️ Physics',
-            'start_physics'
-          ),
-
-          Markup.button.callback(
-            '➗ Mathematics',
-            'start_mathematics'
-          )
-        ],
-
-        [
-          Markup.button.callback(
-            '📜 History',
-            'start_history'
-          ),
-
-          Markup.button.callback(
-            '🌍 Geography',
-            'start_geography'
-          )
-        ],
-
-        [
-          Markup.button.callback(
-            '📈 Economics',
-            'start_economics'
-          ),
-
-          Markup.button.callback(
-            '🇬🇧 English',
-            'start_english'
-          )
-        ],
-
-        [
-          Markup.button.callback(
-            '🎲 Mixed Practice',
-            'start_mixed'
-          )
-        ],
-
-        [
-          Markup.button.callback(
-            '🏠 Main Menu',
-            'home'
-          )
-        ]
-
-      ])
-    }
-
-  );
-
-}
-
-
-// ============================================================
-// PRACTICE MENU BUTTON
-// ============================================================
-
-bot.action('practice_menu', async (ctx) => {
-
-  await ctx.answerCbQuery();
-
-  const user =
-    getUser(ctx.from.id);
-
-  if (!user.unlocked) {
-
-    return ctx.editMessageText(
-
-`🔒 <b>Practice is locked.</b>
-
-Unlock access for <b>${DEMO_PRICE} ETB</b> to start practicing.`,
-
-      {
-        parse_mode: 'HTML',
-
-        ...Markup.inlineKeyboard([
-
-          [
-            Markup.button.callback(
-              `🔓 Unlock — ${DEMO_PRICE} ETB`,
-              'unlock_50'
-            )
-          ],
-
-          [
-            Markup.button.callback(
-              '🏠 Main Menu',
-              'home'
-            )
-          ]
-
-        ])
-      }
-
-    );
-
-  }
-
-  await showPracticeMenu(ctx);
-
-});
-// ============================================================
-// PART 2 — PRACTICE ENGINE
-// ============================================================
-
-// ------------------------------------------------------------
-// Practice session storage
-// ------------------------------------------------------------
-
-const practiceSessions = {};
-
-function getPracticeSession(userId) {
-  if (!practiceSessions[userId]) {
-    practiceSessions[userId] = {
-      ids: [],
-      position: 0,
-      score: 0,
-      answered: false
-    };
-  }
-
-  return practiceSessions[userId];
-}
-
-
-// ------------------------------------------------------------
-// Find a question by subject + permanent question ID
-// ------------------------------------------------------------
-
-function findQuestion(subjectId, questionId) {
-  const subjectQuestions = questions[subjectId] || [];
-
-  return subjectQuestions.find(
-    (q) => q.id === questionId
-  );
-}
-
-
-// ------------------------------------------------------------
-// Progress bar
-// ------------------------------------------------------------
-
-function progressBar(current, total) {
-  const length = 10;
-
-  if (total <= 0) {
-    return '□□□□□□□□□□';
-  }
-
-  const filled = Math.round((current / total) * length);
-  const empty = length - filled;
-
-  return '🟩'.repeat(filled) + '⬜'.repeat(empty);
-}
-
-
-// ------------------------------------------------------------
-// Get the next question ID
-// ------------------------------------------------------------
-
-function getNextQuestionId(subjectId, currentId) {
-  const list = questions[subjectId] || [];
-
-  const currentIndex = list.findIndex(
-    (q) => q.id === currentId
-  );
-
-  if (currentIndex === -1) {
-    return null;
-  }
-
-  const nextIndex = currentIndex + 1;
-
-  if (nextIndex >= list.length) {
-    return null;
-  }
-
-  return list[nextIndex].id;
-}
-
-
-// ------------------------------------------------------------
-// Show a question
-// ------------------------------------------------------------
-
-async function showQuestion(ctx, subjectId, questionId) {
-  const userId = ctx.from.id;
-
-  const question = findQuestion(subjectId, questionId);
-
-  if (!question) {
-    return ctx.editMessageText(
-      `⚠️ <b>Question unavailable</b>\n\n` +
-      `This question could not be found.\n\n` +
-      `Please start a new practice session.`,
-      {
-        parse_mode: 'HTML',
-        ...Markup.inlineKeyboard([
-          [
-            Markup.button.callback(
-              '🔄 Start Practice',
-              'practice_menu'
-            )
-          ],
-          [
-            Markup.button.callback(
-              '🏠 Main Menu',
-              'home'
-            )
-          ]
-        ])
-      }
-    );
-  }
-
-  const session = getPracticeSession(userId);
-
-  session.answered = false;
-
-  const total = session.ids.length || 1;
-  const current = session.position + 1;
-
-  const bar = progressBar(current - 1, total);
-
-  const optionButtons = question.options.map(
-    (option, index) => {
-
-      const letter = String.fromCharCode(65 + index);
-
-      return [
-        Markup.button.callback(
-          `${letter}  ${option}`,
-          `solve|${subjectId}|${question.id}|${letter}`
-        )
-      ];
-    }
-  );
-
-  optionButtons.push([
-    Markup.button.callback(
-      '⏭️ Skip',
-      `skip|${subjectId}|${question.id}`
-    )
-  ]);
-
-  optionButtons.push([
-    Markup.button.callback(
-      '🚪 Exit Practice',
-      'practice_menu'
-    )
-  ]);
-
-  const text =
-    `✍️ <b>Practice</b>\n\n` +
-    `${bar}\n` +
-    `<b>Question ${current} of ${total}</b>\n\n` +
-    `📚 <b>${subjectMap[subjectId]?.name || subjectId}</b>\n` +
-    `🏷️ ${question.topic}\n\n` +
-    `<b>${question.question}</b>\n\n` +
-    `Choose the best answer 👇`;
-
-  await ctx.editMessageText(
-    text,
-    {
-      parse_mode: 'HTML',
-      ...Markup.inlineKeyboard(optionButtons)
-    }
-  );
-}
-
-
-// ------------------------------------------------------------
-// Start a subject practice session
-// ------------------------------------------------------------
-
-async function startSubjectPractice(ctx, subjectId) {
-  const userId = ctx.from.id;
-  const user = getUser(userId);
-
-  if (!user.unlocked) {
-    return ctx.editMessageText(
-      `🔒 <b>Practice is locked</b>\n\n` +
-      `Unlock FineBot Practice for <b>${DEMO_PRICE} ETB</b> ` +
-      `to start practicing.`,
-      {
-        parse_mode: 'HTML',
-        ...Markup.inlineKeyboard([
-          [
-            Markup.button.callback(
-              `🔓 Unlock — ${DEMO_PRICE} ETB`,
-              'unlock_50'
-            )
-          ],
-          [
-            Markup.button.callback(
-              '🏠 Main Menu',
-              'home'
-            )
-          ]
-        ])
-      }
-    );
-  }
-
-  const subjectQuestions = questions[subjectId] || [];
-
-  if (subjectQuestions.length === 0) {
-    return ctx.editMessageText(
-      `📚 <b>No questions yet</b>\n\n` +
-      `Questions for this subject are being prepared.`,
-      {
-        parse_mode: 'HTML',
-        ...Markup.inlineKeyboard([
-          [
-            Markup.button.callback(
-              '⬅️ Back',
-              'practice_menu'
-            )
-          ]
-        ])
-      }
-    );
-  }
-
-  const session = getPracticeSession(userId);
-
-  session.ids = subjectQuestions.map((q) => q.id);
-  session.position = 0;
-  session.score = 0;
-  session.answered = false;
-
-  const firstQuestionId = session.ids[0];
-
-  await showQuestion(
-    ctx,
-    subjectId,
-    firstQuestionId
-  );
-}
-
-
-// ------------------------------------------------------------
-// Subject buttons
-// ------------------------------------------------------------
-
-bot.action(
-  /^subject\|(biology|chemistry|physics|mathematics|history|geography|economics|english)$/,
-  async (ctx) => {
-
-    await ctx.answerCbQuery();
-
-    const subjectId = ctx.match[1];
-
-    await startSubjectPractice(
-      ctx,
-      subjectId
-    );
-  }
-);
-
-
-// ------------------------------------------------------------
-// Answer question
-// ------------------------------------------------------------
-
-bot.action(
-  /^solve\|([^|]+)\|([^|]+)\|([A-D])$/,
-  async (ctx) => {
-
-    await ctx.answerCbQuery();
-
-    const userId = ctx.from.id;
-
-    const subjectId = ctx.match[1];
-    const questionId = ctx.match[2];
-    const selected = ctx.match[3];
-
-    const question = findQuestion(
-      subjectId,
-      questionId
-    );
-
-    if (!question) {
-      return ctx.editMessageText(
-        `⚠️ <b>Question unavailable</b>\n\n` +
-        `Please start a new practice session.`,
-        {
-          parse_mode: 'HTML',
-          ...Markup.inlineKeyboard([
-            [
-              Markup.button.callback(
-                '🔄 Start Practice',
-                'practice_menu'
-              )
-            ]
-          ])
-        }
-      );
-    }
-
-    const session = getPracticeSession(userId);
-
-    // Prevent the same question from being answered twice.
-    if (session.answered) {
-      return;
-    }
-
-    session.answered = true;
-
-    const user = getUser(userId);
-
-    const correct =
-      selected === question.answer;
-
-    user.attempted += 1;
-
-    if (correct) {
-      user.correct += 1;
-      user.score += 1;
-      session.score += 1;
-      user.streak += 1;
-    } else {
-      user.streak = 0;
-    }
-
-    const current =
-      session.position + 1;
-
-    const total =
-      session.ids.length;
-
-    let resultText = '';
-
-    if (correct) {
-
-      resultText =
-        `🎉 <b>Correct!</b>\n\n` +
-        `⭐ +1 point\n\n` +
-        `🧠 <b>Explanation</b>\n` +
-        `${question.explanation}`;
-
-    } else {
-
-      resultText =
-        `❌ <b>Not quite!</b>\n\n` +
-        `✅ Correct answer: <b>${question.answer}</b>\n\n` +
-        `🧠 <b>Explanation</b>\n` +
-        `${question.explanation}`;
-    }
-
-    const nextQuestionId =
-      getNextQuestionId(
-        subjectId,
-        questionId
-      );
-
-    const buttons = [];
-
-    if (nextQuestionId) {
-
-      session.position =
-        Math.min(
-          session.position + 1,
-          total - 1
-        );
-
-      buttons.push([
-        Markup.button.callback(
-          '➡️ Continue',
-          `next|${subjectId}|${nextQuestionId}`
-        )
-      ]);
-
-    } else {
-
-      buttons.push([
-        Markup.button.callback(
-          '🏆 See Results',
-          `results|${subjectId}`
-        )
-      ]);
-    }
-
-    buttons.push([
+function subjectKeyboard(prefix) {
+  const buttons = Object.entries(subjects)
+    .map(([key, value]) => [
       Markup.button.callback(
-        '🚪 Exit Practice',
-        'practice_menu'
+        value.label,
+        `${prefix}_${key}`
       )
     ]);
 
-    const progress =
-      progressBar(
-        current,
-        total
-      );
-
-    await ctx.editMessageText(
-      `✍️ <b>Practice</b>\n\n` +
-      `${progress}\n` +
-      `<b>Question ${current} of ${total}</b>\n\n` +
-      resultText,
-      {
-        parse_mode: 'HTML',
-        ...Markup.inlineKeyboard(buttons)
-      }
-    );
-  }
-);
-
-
-// ------------------------------------------------------------
-// Continue to next question
-// ------------------------------------------------------------
-
-bot.action(
-  /^next\|([^|]+)\|([^|]+)$/,
-  async (ctx) => {
-
-    await ctx.answerCbQuery();
-
-    const userId = ctx.from.id;
-
-    const subjectId = ctx.match[1];
-    const questionId = ctx.match[2];
-
-    const session =
-      getPracticeSession(userId);
-
-    session.answered = false;
-
-    const question =
-      findQuestion(
-        subjectId,
-        questionId
-      );
-
-    if (!question) {
-      return ctx.editMessageText(
-        `⚠️ <b>Question unavailable</b>\n\n` +
-        `Please start a new practice session.`,
-        {
-          parse_mode: 'HTML',
-          ...Markup.inlineKeyboard([
-            [
-              Markup.button.callback(
-                '🔄 Start Practice',
-                'practice_menu'
-              )
-            ]
-          ])
-        }
-      );
-    }
-
-    await showQuestion(
-      ctx,
-      subjectId,
-      questionId
-    );
-  }
-);
-
-
-// ------------------------------------------------------------
-// Skip question
-// ------------------------------------------------------------
-
-bot.action(
-  /^skip\|([^|]+)\|([^|]+)$/,
-  async (ctx) => {
-
-    await ctx.answerCbQuery();
-
-    const userId = ctx.from.id;
-
-    const subjectId = ctx.match[1];
-    const questionId = ctx.match[2];
-
-    const session =
-      getPracticeSession(userId);
-
-    if (session.answered) {
-      return;
-    }
-
-    session.answered = true;
-
-    const nextQuestionId =
-      getNextQuestionId(
-        subjectId,
-        questionId
-      );
-
-    if (!nextQuestionId) {
-
-      return ctx.editMessageText(
-        `⏭️ <b>Practice Complete</b>\n\n` +
-        `You skipped the last question.\n\n` +
-        `Ready to try again?`,
-        {
-          parse_mode: 'HTML',
-          ...Markup.inlineKeyboard([
-            [
-              Markup.button.callback(
-                '🔄 Practice Again',
-                `subject|${subjectId}`
-              )
-            ],
-            [
-              Markup.button.callback(
-                '📚 Practice Menu',
-                'practice_menu'
-              )
-            ]
-          ])
-        }
-      );
-    }
-
-    session.position =
-      Math.min(
-        session.position + 1,
-        session.ids.length - 1
-      );
-
-    session.answered = false;
-
-    await showQuestion(
-      ctx,
-      subjectId,
-      nextQuestionId
-    );
-  }
-);
-
-
-// ------------------------------------------------------------
-// Practice results
-// ------------------------------------------------------------
-
-bot.action(
-  /^results\|([^|]+)$/,
-  async (ctx) => {
-
-    await ctx.answerCbQuery();
-
-    const userId = ctx.from.id;
-
-    const subjectId = ctx.match[1];
-
-    const session =
-      getPracticeSession(userId);
-
-    const user =
-      getUser(userId);
-
-    const total =
-      session.ids.length;
-
-    const score =
-      session.score;
-
-    const percentage =
-      total > 0
-        ? Math.round((score / total) * 100)
-        : 0;
-
-    let message = '';
-
-    if (percentage >= 90) {
-
-      message =
-        `🔥 <b>Outstanding!</b>\n` +
-        `You're mastering this!`;
-
-    } else if (percentage >= 70) {
-
-      message =
-        `🎉 <b>Great job!</b>\n` +
-        `You're making strong progress.`;
-
-    } else if (percentage >= 50) {
-
-      message =
-        `💪 <b>Good effort!</b>\n` +
-        `Keep practicing and you'll improve.`;
-
-    } else {
-
-      message =
-        `🌱 <b>Keep going!</b>\n` +
-        `Every mistake is another opportunity to learn.`;
-    }
-
-    await ctx.editMessageText(
-      `🏆 <b>Practice Complete!</b>\n\n` +
-      `📚 <b>${subjectMap[subjectId]?.name || subjectId}</b>\n\n` +
-      `⭐ Score: <b>${score}/${total}</b>\n` +
-      `📊 Accuracy: <b>${percentage}%</b>\n` +
-      `🔥 Streak: <b>${user.streak}</b>\n\n` +
-      `${message}`,
-      {
-        parse_mode: 'HTML',
-        ...Markup.inlineKeyboard([
-          [
-            Markup.button.callback(
-              '🔄 Practice Again',
-              `subject|${subjectId}`
-            )
-          ],
-          [
-            Markup.button.callback(
-              '📚 Practice Menu',
-              'practice_menu'
-            )
-          ],
-          [
-            Markup.button.callback(
-              '🏠 Main Menu',
-              'home'
-            )
-          ]
-        ])
-      }
-    );
-  }
-);
-// ============================================================
-// PART 3 — MIXED PRACTICE + DAILY CHALLENGE + PROGRESS
-// ============================================================
-
-
-// ------------------------------------------------------------
-// ALL SUBJECT IDS
-// ------------------------------------------------------------
-
-const ALL_SUBJECT_IDS = [
-  'biology',
-  'chemistry',
-  'physics',
-  'mathematics',
-  'history',
-  'geography',
-  'economics',
-  'english'
-];
-
-
-// ------------------------------------------------------------
-// GET ALL QUESTIONS
-// ------------------------------------------------------------
-
-function getAllQuestions() {
-  const all = [];
-
-  for (const subjectId of ALL_SUBJECT_IDS) {
-    const subjectQuestions = questions[subjectId] || [];
-
-    for (const question of subjectQuestions) {
-      all.push({
-        ...question,
-        subjectId
-      });
-    }
-  }
-
-  return all;
-}
-
-
-// ------------------------------------------------------------
-// SHUFFLE ARRAY
-// ------------------------------------------------------------
-
-function shuffleArray(array) {
-  const copy = [...array];
-
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-
-    [copy[i], copy[j]] =
-      [copy[j], copy[i]];
-  }
-
-  return copy;
-}
-
-
-// ------------------------------------------------------------
-// MIXED PRACTICE
-// ------------------------------------------------------------
-
-async function startMixedPractice(ctx) {
-
-  const userId = ctx.from.id;
-
-  const user = getUser(userId);
-
-  if (!user.unlocked) {
-
-    return ctx.editMessageText(
-      `🔒 <b>Practice is locked</b>\n\n` +
-      `Unlock FineBot Practice for <b>${DEMO_PRICE} ETB</b> ` +
-      `to start practicing.`,
-      {
-        parse_mode: 'HTML',
-        ...Markup.inlineKeyboard([
-          [
-            Markup.button.callback(
-              `🔓 Unlock — ${DEMO_PRICE} ETB`,
-              'unlock_50'
-            )
-          ],
-          [
-            Markup.button.callback(
-              '🏠 Main Menu',
-              'home'
-            )
-          ]
-        ])
-      }
-    );
-  }
-
-
-  const allQuestions =
-    getAllQuestions();
-
-
-  if (allQuestions.length === 0) {
-
-    return ctx.editMessageText(
-      `📚 <b>No questions available</b>\n\n` +
-      `More practice questions are coming soon.`,
-      {
-        parse_mode: 'HTML',
-        ...Markup.inlineKeyboard([
-          [
-            Markup.button.callback(
-              '⬅️ Practice Menu',
-              'practice_menu'
-            )
-          ]
-        ])
-      }
-    );
-  }
-
-
-  // Take up to 10 random questions.
-  const selected =
-    shuffleArray(allQuestions)
-      .slice(
-        0,
-        Math.min(10, allQuestions.length)
-      );
-
-
-  const session =
-    getPracticeSession(userId);
-
-
-  session.ids =
-    selected.map(
-      (q) => `${q.subjectId}:${q.id}`
-    );
-
-  session.position = 0;
-  session.score = 0;
-  session.answered = false;
-
-
-  const first =
-    selected[0];
-
-
-  await showMixedQuestion(
-    ctx,
-    first.subjectId,
-    first.id
-  );
-}
-
-
-// ------------------------------------------------------------
-// FIND MIXED QUESTION
-// ------------------------------------------------------------
-
-function findMixedQuestion(
-  subjectId,
-  questionId
-) {
-  return findQuestion(
-    subjectId,
-    questionId
-  );
-}
-
-
-// ------------------------------------------------------------
-// SHOW MIXED QUESTION
-// ------------------------------------------------------------
-
-async function showMixedQuestion(
-  ctx,
-  subjectId,
-  questionId
-) {
-
-  const userId =
-    ctx.from.id;
-
-  const question =
-    findMixedQuestion(
-      subjectId,
-      questionId
-    );
-
-
-  if (!question) {
-
-    return ctx.editMessageText(
-      `⚠️ <b>Question unavailable</b>\n\n` +
-      `Please start a new mixed practice.`,
-      {
-        parse_mode: 'HTML',
-        ...Markup.inlineKeyboard([
-          [
-            Markup.button.callback(
-              '🔄 Mixed Practice',
-              'mixed_practice'
-            )
-          ],
-          [
-            Markup.button.callback(
-              '🏠 Main Menu',
-              'home'
-            )
-          ]
-        ])
-      }
-    );
-  }
-
-
-  const session =
-    getPracticeSession(userId);
-
-
-  session.answered = false;
-
-
-  const total =
-    session.ids.length;
-
-
-  const current =
-    session.position + 1;
-
-
-  const bar =
-    progressBar(
-      current - 1,
-      total
-    );
-
-
-  const buttons =
-    question.options.map(
-      (option, index) => {
-
-        const letter =
-          String.fromCharCode(
-            65 + index
-          );
-
-        return [
-          Markup.button.callback(
-            `${letter}  ${option}`,
-            `mixedsolve|${subjectId}|${question.id}|${letter}`
-          )
-        ];
-      }
-    );
-
-
   buttons.push([
     Markup.button.callback(
-      '⏭️ Skip',
-      `mixedskip|${subjectId}|${question.id}`
-    )
-  ]);
-
-
-  buttons.push([
-    Markup.button.callback(
-      '🚪 Exit',
-      'practice_menu'
-    )
-  ]);
-
-
-  const subjectName =
-    subjectMap[subjectId]?.name ||
-    subjectId;
-
-
-  const text =
-    `🎯 <b>Mixed Practice</b>\n\n` +
-    `${bar}\n` +
-    `<b>Question ${current} of ${total}</b>\n\n` +
-    `📚 ${subjectName}\n` +
-    `🏷️ ${question.topic}\n\n` +
-    `<b>${question.question}</b>\n\n` +
-    `Choose your answer 👇`;
-
-
-  await ctx.editMessageText(
-    text,
-    {
-      parse_mode: 'HTML',
-      ...Markup.inlineKeyboard(buttons)
-    }
-  );
-}
-
-
-// ------------------------------------------------------------
-// MIXED ANSWER
-// ------------------------------------------------------------
-
-bot.action(
-  /^mixedsolve\|([^|]+)\|([^|]+)\|([A-D])$/,
-  async (ctx) => {
-
-    await ctx.answerCbQuery();
-
-
-    const userId =
-      ctx.from.id;
-
-
-    const subjectId =
-      ctx.match[1];
-
-
-    const questionId =
-      ctx.match[2];
-
-
-    const selected =
-      ctx.match[3];
-
-
-    const question =
-      findMixedQuestion(
-        subjectId,
-        questionId
-      );
-
-
-    if (!question) {
-
-      return ctx.editMessageText(
-        `⚠️ <b>Question unavailable</b>\n\n` +
-        `Please start a new session.`,
-        {
-          parse_mode: 'HTML',
-          ...Markup.inlineKeyboard([
-            [
-              Markup.button.callback(
-                '🔄 Mixed Practice',
-                'mixed_practice'
-              )
-            ]
-          ])
-        }
-      );
-    }
-
-
-    const session =
-      getPracticeSession(userId);
-
-
-    if (session.answered) {
-      return;
-    }
-
-
-    session.answered = true;
-
-
-    const user =
-      getUser(userId);
-
-
-    const correct =
-      selected === question.answer;
-
-
-    user.attempted += 1;
-
-
-    if (correct) {
-
-      user.correct += 1;
-
-      user.score += 1;
-
-      user.streak += 1;
-
-      session.score += 1;
-
-    } else {
-
-      user.streak = 0;
-    }
-
-
-    const current =
-      session.position + 1;
-
-
-    const total =
-      session.ids.length;
-
-
-    let resultText;
-
-
-    if (correct) {
-
-      resultText =
-        `🎉 <b>Correct!</b>\n\n` +
-        `⭐ +1 point\n\n` +
-        `🧠 <b>Why?</b>\n` +
-        `${question.explanation}`;
-
-    } else {
-
-      resultText =
-        `❌ <b>Incorrect</b>\n\n` +
-        `✅ Correct answer: <b>${question.answer}</b>\n\n` +
-        `🧠 <b>Why?</b>\n` +
-        `${question.explanation}`;
-    }
-
-
-    const nextIndex =
-      session.position + 1;
-
-
-    const nextKey =
-      session.ids[nextIndex];
-
-
-    const buttons = [];
-
-
-    if (nextKey) {
-
-      const parts =
-        nextKey.split(':');
-
-
-      const nextSubject =
-        parts[0];
-
-
-      const nextQuestion =
-        parts.slice(1).join(':');
-
-
-      session.position =
-        nextIndex;
-
-
-      buttons.push([
-        Markup.button.callback(
-          '➡️ Continue',
-          `mixednext|${nextSubject}|${nextQuestion}`
-        )
-      ]);
-
-    } else {
-
-      buttons.push([
-        Markup.button.callback(
-          '🏆 See Results',
-          'mixed_results'
-        )
-      ]);
-    }
-
-
-    buttons.push([
-      Markup.button.callback(
-        '🚪 Exit',
-        'practice_menu'
-      )
-    ]);
-
-
-    const bar =
-      progressBar(
-        current,
-        total
-      );
-
-
-    await ctx.editMessageText(
-      `🎯 <b>Mixed Practice</b>\n\n` +
-      `${bar}\n` +
-      `<b>Question ${current} of ${total}</b>\n\n` +
-      resultText,
-      {
-        parse_mode: 'HTML',
-        ...Markup.inlineKeyboard(buttons)
-      }
-    );
-  }
-);
-
-
-// ------------------------------------------------------------
-// MIXED NEXT
-// ------------------------------------------------------------
-
-bot.action(
-  /^mixednext\|([^|]+)\|([^|]+)$/,
-  async (ctx) => {
-
-    await ctx.answerCbQuery();
-
-
-    const subjectId =
-      ctx.match[1];
-
-
-    const questionId =
-      ctx.match[2];
-
-
-    const question =
-      findMixedQuestion(
-        subjectId,
-        questionId
-      );
-
-
-    if (!question) {
-
-      return ctx.editMessageText(
-        `⚠️ <b>Question unavailable</b>\n\n` +
-        `Please start a new session.`,
-        {
-          parse_mode: 'HTML',
-          ...Markup.inlineKeyboard([
-            [
-              Markup.button.callback(
-                '🔄 Mixed Practice',
-                'mixed_practice'
-              )
-            ]
-          ])
-        }
-      );
-    }
-
-
-    const session =
-      getPracticeSession(
-        ctx.from.id
-      );
-
-
-    session.answered = false;
-
-
-    await showMixedQuestion(
-      ctx,
-      subjectId,
-      questionId
-    );
-  }
-);
-
-
-// ------------------------------------------------------------
-// MIXED SKIP
-// ------------------------------------------------------------
-
-bot.action(
-  /^mixedskip\|([^|]+)\|([^|]+)$/,
-  async (ctx) => {
-
-    await ctx.answerCbQuery();
-
-
-    const userId =
-      ctx.from.id;
-
-
-    const session =
-      getPracticeSession(userId);
-
-
-    if (session.answered) {
-      return;
-    }
-
-
-    session.answered = true;
-
-
-    const nextIndex =
-      session.position + 1;
-
-
-    const nextKey =
-      session.ids[nextIndex];
-
-
-    if (!nextKey) {
-
-      return ctx.editMessageText(
-        `🎯 <b>Mixed Practice Complete</b>\n\n` +
-        `You skipped the final question.\n\n` +
-        `Ready for another round?`,
-        {
-          parse_mode: 'HTML',
-          ...Markup.inlineKeyboard([
-            [
-              Markup.button.callback(
-                '🔄 Play Again',
-                'mixed_practice'
-              )
-            ],
-            [
-              Markup.button.callback(
-                '📚 Practice Menu',
-                'practice_menu'
-              )
-            ]
-          ])
-        }
-      );
-    }
-
-
-    const parts =
-      nextKey.split(':');
-
-
-    const nextSubject =
-      parts[0];
-
-
-    const nextQuestion =
-      parts.slice(1).join(':');
-
-
-    session.position =
-      nextIndex;
-
-
-    session.answered = false;
-
-
-    await showMixedQuestion(
-      ctx,
-      nextSubject,
-      nextQuestion
-    );
-  }
-);
-
-
-// ------------------------------------------------------------
-// MIXED RESULTS
-// ------------------------------------------------------------
-
-bot.action(
-  'mixed_results',
-  async (ctx) => {
-
-    await ctx.answerCbQuery();
-
-
-    const userId =
-      ctx.from.id;
-
-
-    const session =
-      getPracticeSession(userId);
-
-
-    const user =
-      getUser(userId);
-
-
-    const total =
-      session.ids.length;
-
-
-    const score =
-      session.score;
-
-
-    const percentage =
-      total > 0
-        ? Math.round(
-            (score / total) * 100
-          )
-        : 0;
-
-
-    let message;
-
-
-    if (percentage >= 90) {
-
-      message =
-        `🔥 <b>Excellent!</b>\n` +
-        `You're seriously improving.`;
-
-    } else if (percentage >= 70) {
-
-      message =
-        `🎉 <b>Great work!</b>\n` +
-        `Keep that momentum going.`;
-
-    } else if (percentage >= 50) {
-
-      message =
-        `💪 <b>Good effort!</b>\n` +
-        `A little more practice will make you stronger.`;
-
-    } else {
-
-      message =
-        `🌱 <b>Keep learning!</b>\n` +
-        `Don't fear mistakes. Use them to improve.`;
-    }
-
-
-    await ctx.editMessageText(
-      `🏆 <b>Mixed Practice Complete!</b>\n\n` +
-      `⭐ Score: <b>${score}/${total}</b>\n` +
-      `📊 Accuracy: <b>${percentage}%</b>\n` +
-      `🔥 Streak: <b>${user.streak}</b>\n\n` +
-      `${message}`,
-      {
-        parse_mode: 'HTML',
-        ...Markup.inlineKeyboard([
-          [
-            Markup.button.callback(
-              '🎯 Play Again',
-              'mixed_practice'
-            )
-          ],
-          [
-            Markup.button.callback(
-              '📊 My Progress',
-              'my_progress'
-            )
-          ],
-          [
-            Markup.button.callback(
-              '🏠 Main Menu',
-              'home'
-            )
-          ]
-        ])
-      }
-    );
-  }
-);
-
-
-// ------------------------------------------------------------
-// MIXED PRACTICE BUTTON
-// ------------------------------------------------------------
-
-bot.action(
-  'mixed_practice',
-  async (ctx) => {
-
-    await ctx.answerCbQuery();
-
-    await startMixedPractice(ctx);
-  }
-);
-
-
-// ------------------------------------------------------------
-// DAILY CHALLENGE
-// ------------------------------------------------------------
-
-function getDailyQuestion() {
-
-  const all =
-    getAllQuestions();
-
-
-  if (all.length === 0) {
-    return null;
-  }
-
-
-  // Same question for everyone during the same day.
-  const now =
-    new Date();
-
-
-  const dateKey =
-    `${now.getUTCFullYear()}-` +
-    `${now.getUTCMonth() + 1}-` +
-    `${now.getUTCDate()}`;
-
-
-  let hash = 0;
-
-
-  for (let i = 0; i < dateKey.length; i++) {
-
-    hash =
-      ((hash << 5) - hash) +
-      dateKey.charCodeAt(i);
-
-    hash |= 0;
-  }
-
-
-  const index =
-    Math.abs(hash) % all.length;
-
-
-  return all[index];
-}
-
-
-// ------------------------------------------------------------
-// DAILY CHALLENGE SCREEN
-// ------------------------------------------------------------
-
-async function showDailyChallenge(ctx) {
-
-  const user =
-    getUser(ctx.from.id);
-
-
-  if (!user.unlocked) {
-
-    return ctx.editMessageText(
-      `🔒 <b>Daily Challenge is locked</b>\n\n` +
-      `Unlock FineBot Practice for <b>${DEMO_PRICE} ETB</b> ` +
-      `to access challenges.`,
-      {
-        parse_mode: 'HTML',
-        ...Markup.inlineKeyboard([
-          [
-            Markup.button.callback(
-              `🔓 Unlock — ${DEMO_PRICE} ETB`,
-              'unlock_50'
-            )
-          ],
-          [
-            Markup.button.callback(
-              '🏠 Main Menu',
-              'home'
-            )
-          ]
-        ])
-      }
-    );
-  }
-
-
-  const daily =
-    getDailyQuestion();
-
-
-  if (!daily) {
-
-    return ctx.editMessageText(
-      `🎯 <b>Daily Challenge</b>\n\n` +
-      `No challenge is available yet.`,
-      {
-        parse_mode: 'HTML',
-        ...Markup.inlineKeyboard([
-          [
-            Markup.button.callback(
-              '🏠 Main Menu',
-              'home'
-            )
-          ]
-        ])
-      }
-    );
-  }
-
-
-  const subjectName =
-    subjectMap[daily.subjectId]?.name ||
-    daily.subjectId;
-
-
-  const buttons =
-    daily.options.map(
-      (option, index) => {
-
-        const letter =
-          String.fromCharCode(
-            65 + index
-          );
-
-
-        return [
-          Markup.button.callback(
-            `${letter}  ${option}`,
-            `dailyanswer|${daily.subjectId}|${daily.id}|${letter}`
-          )
-        ];
-      }
-    );
-
-
-  buttons.push([
-    Markup.button.callback(
-      '🏠 Main Menu',
+      '⬅️ Home',
       'home'
     )
   ]);
 
+  return Markup.inlineKeyboard(buttons);
+}
 
-  await ctx.editMessageText(
-    `🎯 <b>DAILY CHALLENGE</b>\n\n` +
-    `🔥 One question. One chance. Give it your best shot!\n\n` +
-    `📚 ${subjectName}\n` +
-    `🏷️ ${daily.topic}\n\n` +
-    `<b>${daily.question}</b>\n\n` +
-    `Choose your answer 👇`,
-    {
-      parse_mode: 'HTML',
-      ...Markup.inlineKeyboard(buttons)
-    }
+function learnUnitKeyboard(subjectKey) {
+  const subject = subjects[subjectKey];
+
+  if (!subject) {
+    return homeKeyboard();
+  }
+
+  const buttons = subject.units.map(unit => [
+    Markup.button.callback(
+      `📖 ${unit}`,
+      `learn_unit_${subjectKey}_${encodeURIComponent(unit)}`
+    )
+  ]);
+
+  buttons.push([
+    Markup.button.callback(
+      '⬅️ Subjects',
+      'learn_main'
+    )
+  ]);
+
+  return Markup.inlineKeyboard(buttons);
+}
+
+function practiceKeyboard() {
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback(
+        '📚 By Subject',
+        'practice_subject_selection'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '🎯 Mixed Practice',
+        'practice_mixed'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '🧠 Smart Review',
+        'practice_smart'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '⬅️ Home',
+        'home'
+      )
+    ]
+  ]);
+}
+
+function backToLearnKeyboard() {
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback(
+        '📚 Back to Learn',
+        'learn_main'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '🏠 Home',
+        'home'
+      )
+    ]
+  ]);
+}
+
+function tipsKeyboard() {
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback(
+        '📅 Revision Strategy',
+        'tip_revision'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '⏱️ Time Management',
+        'tip_time'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '📝 Exam Techniques',
+        'tip_techniques'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '🔥 Final Week',
+        'tip_final'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '😰 Exam Stress',
+        'tip_stress'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '⬅️ Home',
+        'home'
+      )
+    ]
+  ]);
+}
+
+function buddyKeyboard() {
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback(
+        '😰 I\'m stressed',
+        'buddy_stressed'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '😕 I\'m confused',
+        'buddy_confused'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '📅 Help me make a study plan',
+        'buddy_plan'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '🔥 I need motivation',
+        'buddy_motivation'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '📚 What should I study next?',
+        'buddy_next'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '⬅️ Home',
+        'home'
+      )
+    ]
+  ]);
+}
+
+function supportKeyboard() {
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback(
+        '❓ How FineBot works',
+        'support_how'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '💳 Payment help',
+        'support_payment'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '🔓 Access problem',
+        'support_access'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '🐛 Report a problem',
+        'support_report'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '💡 Send feedback',
+        'support_feedback'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '🛠️ Technical support',
+        'support_tech'
+      )
+    ],
+    [
+      Markup.button.callback(
+        '⬅️ Home',
+        'home'
+      )
+    ]
+  ]);
+}
+// ------------------------------------------------------------
+// CALLBACK HELPER + HOME
+// ------------------------------------------------------------
+
+async function answerCallback(ctx) {
+  try {
+    await ctx.answerCbQuery();
+  } catch (error) {
+    // Callback may already have expired.
+  }
+}
+
+function getHomeText(user) {
+  const accuracy = getAccuracy(user);
+
+  return `🌟 FINEBOT
+Grade 12 Mastering Companion
+
+👋 Welcome, ${user.name}!
+
+🔥 ${user.streak} day streak
+⭐ ${user.xp} XP
+🎯 Accuracy: ${accuracy}%
+
+What do you want to do?`;
+}
+
+async function showHome(ctx) {
+  const user = getUser(ctx);
+
+  user.currentMode = 'home';
+
+  await ctx.reply(
+    getHomeText(user),
+    homeKeyboard()
   );
 }
 
+bot.start(async ctx => {
+  const user = getUser(ctx);
 
+  user.currentMode = 'home';
+
+  await ctx.reply(
+    getHomeText(user),
+    homeKeyboard()
+  );
+});
+
+bot.action('home', async ctx => {
+  await answerCallback(ctx);
+  await showHome(ctx);
+});
 // ------------------------------------------------------------
-// DAILY CHALLENGE BUTTON
+// LEARN SYSTEM
 // ------------------------------------------------------------
 
-bot.action(
-  'daily_challenge',
-  async (ctx) => {
+bot.action('learn_main', async ctx => {
+  await answerCallback(ctx);
 
-    await ctx.answerCbQuery();
+  const user = getUser(ctx);
+  user.currentMode = 'learning';
 
-    await showDailyChallenge(ctx);
+  await ctx.reply(
+    '📚 LEARN\n\nChoose a subject:',
+    subjectKeyboard('learn_subject')
+  );
+});
+
+bot.action(/^learn_subject_(.+)$/, async ctx => {
+  await answerCallback(ctx);
+
+  const user = getUser(ctx);
+  const subjectKey = ctx.match[1];
+
+  if (!subjects[subjectKey]) {
+    return ctx.reply('Subject not found.');
   }
-);
 
+  user.currentSubject = subjectKey;
 
-// ------------------------------------------------------------
-// DAILY ANSWER
-// ------------------------------------------------------------
+  await ctx.reply(
+    `${subjects[subjectKey].label}
 
-bot.action(
-  /^dailyanswer\|([^|]+)\|([^|]+)\|([A-D])$/,
-  async (ctx) => {
+Choose a topic:`,
+    learnUnitKeyboard(subjectKey)
+  );
+});
 
-    await ctx.answerCbQuery();
+bot.action(/^learn_unit_(.+)_(.+)$/, async ctx => {
+  await answerCallback(ctx);
 
+  const user = getUser(ctx);
 
-    const subjectId =
-      ctx.match[1];
+  const subjectKey = ctx.match[1];
+  const unitName = decodeURIComponent(
+    ctx.match[2]
+  );
 
-
-    const questionId =
-      ctx.match[2];
-
-
-    const selected =
-      ctx.match[3];
-
-
-    const question =
-      findQuestion(
-        subjectId,
-        questionId
-      );
-
-
-    if (!question) {
-
-      return ctx.editMessageText(
-        `⚠️ <b>Daily Challenge unavailable</b>\n\n` +
-        `Please try again later.`,
-        {
-          parse_mode: 'HTML',
-          ...Markup.inlineKeyboard([
-            [
-              Markup.button.callback(
-                '🏠 Main Menu',
-                'home'
-              )
-            ]
-          ])
-        }
-      );
-    }
-
-
-    const user =
-      getUser(ctx.from.id);
-
-
-    const correct =
-      selected === question.answer;
-
-
-    user.attempted += 1;
-
-
-    if (correct) {
-
-      user.correct += 1;
-
-      user.score += 1;
-
-      user.streak += 1;
-
-    } else {
-
-      user.streak = 0;
-    }
-
-
-    if (correct) {
-
-      await ctx.editMessageText(
-        `🎯 <b>Daily Challenge Complete!</b>\n\n` +
-        `🎉 <b>Correct!</b>\n\n` +
-        `⭐ +1 point\n\n` +
-        `🧠 <b>Explanation</b>\n` +
-        `${question.explanation}\n\n` +
-        `🔥 Current streak: <b>${user.streak}</b>`,
-        {
-          parse_mode: 'HTML',
-          ...Markup.inlineKeyboard([
-            [
-              Markup.button.callback(
-                '✍️ Practice More',
-                'practice_menu'
-              )
-            ],
-            [
-              Markup.button.callback(
-                '📊 My Progress',
-                'my_progress'
-              )
-            ],
-            [
-              Markup.button.callback(
-                '🏠 Main Menu',
-                'home'
-              )
-            ]
-          ])
-        }
-      );
-
-    } else {
-
-      await ctx.editMessageText(
-        `🎯 <b>Daily Challenge Complete!</b>\n\n` +
-        `❌ <b>Not quite!</b>\n\n` +
-        `✅ Correct answer: <b>${question.answer}</b>\n\n` +
-        `🧠 <b>Explanation</b>\n` +
-        `${question.explanation}\n\n` +
-        `💡 Don't worry — tomorrow is another challenge!`,
-        {
-          parse_mode: 'HTML',
-          ...Markup.inlineKeyboard([
-            [
-              Markup.button.callback(
-                '✍️ Practice',
-                'practice_menu'
-              )
-            ],
-            [
-              Markup.button.callback(
-                '📊 My Progress',
-                'my_progress'
-              )
-            ],
-            [
-              Markup.button.callback(
-                '🏠 Main Menu',
-                'home'
-              )
-            ]
-          ])
-        }
-      );
-    }
+  if (!subjects[subjectKey]) {
+    return ctx.reply('Subject not found.');
   }
-);
 
+  const lesson = lessons[subjectKey]?.[unitName];
 
-// ------------------------------------------------------------
-// MY PROGRESS
-// ------------------------------------------------------------
+  if (!lesson) {
+    return ctx.reply(
+      '📚 This lesson is being prepared.'
+    );
+  }
 
-async function showProgress(ctx) {
+  user.currentSubject = subjectKey;
+  user.currentUnit = unitName;
 
-  const user =
-    getUser(ctx.from.id);
+  const concepts = lesson.concepts
+    .map(item => `• ${item}`)
+    .join('\n');
 
+  await ctx.reply(
+`${subjects[subjectKey].label}
 
-  const attempted =
-    user.attempted;
+📖 ${lesson.title}
 
+${concepts}
 
-  const correct =
-    user.correct;
+💡 REMEMBER
 
+${lesson.remember}
 
-  const accuracy =
-    attempted > 0
-      ? Math.round(
-          (correct / attempted) * 100
+━━━━━━━━━━━━━━
+
+Ready to test yourself?`,
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          '✍️ Practice this topic',
+          `practice_unit_${subjectKey}_${encodeURIComponent(unitName)}`
         )
-      : 0;
+      ],
+      [
+        Markup.button.callback(
+          '✅ Complete Lesson',
+          `complete_lesson_${subjectKey}_${encodeURIComponent(unitName)}`
+        )
+      ],
+      [
+        Markup.button.callback(
+          '⬅️ Back',
+          `learn_subject_${subjectKey}`
+        )
+      ]
+    ])
+  );
+});
 
+bot.action(
+  /^complete_lesson_(.+)_(.+)$/,
+  async ctx => {
+    await answerCallback(ctx);
 
-  let level;
+    const user = getUser(ctx);
 
+    const subjectKey = ctx.match[1];
+    const unitName = decodeURIComponent(
+      ctx.match[2]
+    );
 
-  if (correct >= 50) {
+    const lessonId =
+      `${subjectKey}:${unitName}`;
 
-    level = '🏆 Master';
+    if (
+      !user.lessonsCompleted.includes(
+        lessonId
+      )
+    ) {
+      user.lessonsCompleted.push(
+        lessonId
+      );
 
-  } else if (correct >= 25) {
+      user.xp += 5;
+    }
 
-    level = '🔥 Advanced';
+    await ctx.reply(
+`✅ LESSON COMPLETE!
 
-  } else if (correct >= 10) {
+📖 ${unitName}
+⭐ +5 XP
 
-    level = '⚡ Improving';
-
-  } else {
-
-    level = '🌱 Beginner';
-  }
-
-
-  await ctx.editMessageText(
-    `📊 <b>MY PROGRESS</b>\n\n` +
-    `${level}\n\n` +
-    `⭐ Total Points: <b>${user.score}</b>\n` +
-    `📝 Questions Answered: <b>${attempted}</b>\n` +
-    `✅ Correct Answers: <b>${correct}</b>\n` +
-    `📈 Accuracy: <b>${accuracy}%</b>\n` +
-    `🔥 Current Streak: <b>${user.streak}</b>\n\n` +
-    `Keep practicing every day and watch your score grow! 🚀`,
-    {
-      parse_mode: 'HTML',
-      ...Markup.inlineKeyboard([
+Your progress has been saved.`,
+      Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            '📚 Continue Learning',
+            `learn_subject_${subjectKey}`
+          )
+        ],
         [
           Markup.button.callback(
             '✍️ Practice',
-            'practice_menu'
+            `practice_subject_${subjectKey}`
           )
         ],
         [
           Markup.button.callback(
-            '🎯 Daily Challenge',
-            'daily_challenge'
-          )
-        ],
-        [
-          Markup.button.callback(
-            '🏠 Main Menu',
+            '🏠 Home',
             'home'
           )
         ]
       ])
+    );
+  }
+);
+
+bot.action(
+  /^practice_unit_(.+)_(.+)$/,
+  async ctx => {
+    await answerCallback(ctx);
+
+    const user = getUser(ctx);
+
+    const subjectKey = ctx.match[1];
+    const unitName = decodeURIComponent(
+      ctx.match[2]
+    );
+
+    const questions = questionBank.filter(
+      q =>
+        q.subject === subjectKey &&
+        q.unit === unitName
+    );
+
+    if (!questions.length) {
+      return ctx.reply(
+        '✍️ There are no practice questions for this topic yet.'
+      );
     }
+
+    user.currentMode = 'practice';
+    user.currentSubject = subjectKey;
+    user.currentUnit = unitName;
+    user.practiceQuestions =
+      shuffle(questions);
+    user.currentQuestionIndex = 0;
+
+    await sendQuestion(ctx);
+  }
+);
+// ------------------------------------------------------------
+// PRACTICE SYSTEM
+// ------------------------------------------------------------
+
+bot.action('practice_main', async ctx => {
+  await answerCallback(ctx);
+
+  const user = getUser(ctx);
+  user.currentMode = 'practice';
+
+  await ctx.reply(
+    `✍️ PRACTICE
+
+What would you like to practice?`,
+    practiceKeyboard()
   );
+});
+
+bot.action(
+  'practice_subject_selection',
+  async ctx => {
+    await answerCallback(ctx);
+
+    await ctx.reply(
+      '📚 CHOOSE SUBJECT',
+      subjectKeyboard('practice_subject')
+    );
+  }
+);
+
+bot.action(/^practice_subject_(.+)$/, async ctx => {
+  await answerCallback(ctx);
+
+  const user = getUser(ctx);
+  const subjectKey = ctx.match[1];
+
+  if (!subjects[subjectKey]) {
+    return ctx.reply('Subject not found.');
+  }
+
+  const questions =
+    getQuestionsForSubject(
+      subjectKey,
+      5
+    );
+
+  if (!questions.length) {
+    return ctx.reply(
+      'No questions available for this subject yet.'
+    );
+  }
+
+  user.currentMode = 'practice';
+  user.currentSubject = subjectKey;
+  user.currentUnit = null;
+  user.practiceQuestions = questions;
+  user.currentQuestionIndex = 0;
+
+  await sendQuestion(ctx);
+});
+
+bot.action('practice_mixed', async ctx => {
+  await answerCallback(ctx);
+
+  const user = getUser(ctx);
+
+  user.currentMode = 'practice';
+  user.currentSubject = null;
+  user.currentUnit = null;
+  user.practiceQuestions =
+    getMixedQuestions(5);
+  user.currentQuestionIndex = 0;
+
+  await sendQuestion(ctx);
+});
+
+bot.action('practice_smart', async ctx => {
+  await answerCallback(ctx);
+
+  const user = getUser(ctx);
+
+  user.currentMode = 'smart_review';
+  user.practiceQuestions =
+    getSmartReviewQuestions(user, 5);
+  user.currentQuestionIndex = 0;
+
+  await sendQuestion(ctx);
+});
+// ------------------------------------------------------------
+// QUESTION ENGINE + ANSWER HANDLING
+// ------------------------------------------------------------
+
+async function sendQuestion(ctx) {
+  const user = getUser(ctx);
+
+  const question = getQuestion(user);
+
+  if (!question) {
+    return finishPractice(ctx);
+  }
+
+  const subject =
+    subjects[question.subject];
+
+  const number =
+    user.currentQuestionIndex + 1;
+
+  const total =
+    user.practiceQuestions.length;
+
+  const buttons = question.options.map(
+    (option, index) =>
+      Markup.button.callback(
+        option,
+        `answer_${index}`
+      )
+  );
+
+  const keyboard = [];
+
+  for (
+    let i = 0;
+    i < buttons.length;
+    i += 2
+  ) {
+    keyboard.push(
+      buttons.slice(i, i + 2)
+    );
+  }
+
+  keyboard.push([
+    Markup.button.callback(
+      '🚪 Exit',
+      'practice_main'
+    )
+  ]);
+
+  await ctx.reply(
+`${subject?.label || '📚 Practice'}
+
+Question ${number} / ${total}
+
+${question.question}`,
+    Markup.inlineKeyboard(keyboard)
+  );
+}
+
+bot.action(/^answer_([0-3])$/, async ctx => {
+  await answerCallback(ctx);
+
+  const user = getUser(ctx);
+  const selected =
+    Number(ctx.match[1]);
+
+  const question = getQuestion(user);
+
+  if (!question) {
+    return ctx.reply(
+      'This question is no longer active.'
+    );
+  }
+
+  if (user.currentMode === 'daily') {
+    return handleDailyAnswer(
+      ctx,
+      user,
+      question,
+      selected
+    );
+  }
+
+  return handlePracticeAnswer(
+    ctx,
+    user,
+    question,
+    selected
+  );
+});
+
+async function handlePracticeAnswer(
+  ctx,
+  user,
+  question,
+  selected
+) {
+  const correct =
+    recordAnswer(
+      user,
+      question,
+      selected
+    );
+
+  user.currentQuestionIndex++;
+
+  if (correct) {
+    await ctx.reply(
+`✅ CORRECT!
+
+${question.explanation}
+
+⭐ +10 XP`
+    );
+  } else {
+    await ctx.reply(
+`❌ NOT QUITE
+
+Correct answer:
+${question.options[question.correct]}
+
+💡 WHY?
+
+${question.explanation}
+
+🧠 Saved for Smart Review`
+    );
+  }
+
+  await sendQuestion(ctx);
+}
+
+async function finishPractice(ctx) {
+  const user = getUser(ctx);
+
+  const accuracy =
+    getAccuracy(user);
+
+  user.currentMode = 'home';
+  user.practiceQuestions = [];
+  user.currentQuestionIndex = 0;
+
+  await ctx.reply(
+`🎉 PRACTICE COMPLETE!
+
+Great work.
+
+⭐ XP: ${user.xp}
+🎯 Accuracy: ${accuracy}%
+📝 Questions answered: ${user.questionsAnswered}
+
+Keep going—the next question makes you stronger.`,
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          '🔄 Practice Again',
+          'practice_main'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🧠 Smart Review',
+          'practice_smart'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '📊 My Progress',
+          'progress_main'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🏠 Home',
+          'home'
+        )
+      ]
+    ])
+  );
+}
+// ------------------------------------------------------------
+// DAILY CHALLENGE
+// ------------------------------------------------------------
+
+function getTodayKey() {
+  const now = new Date();
+
+  return [
+    now.getUTCFullYear(),
+    now.getUTCMonth() + 1,
+    now.getUTCDate()
+  ].join('-');
+}
+
+function getDailyQuestion() {
+  const key = getTodayKey();
+
+  let hash = 0;
+
+  for (let i = 0; i < key.length; i++) {
+    hash =
+      (hash * 31 +
+        key.charCodeAt(i)) >>> 0;
+  }
+
+  return questionBank[
+    hash % questionBank.length
+  ];
+}
+
+bot.action('daily_main', async ctx => {
+  await answerCallback(ctx);
+
+  const user = getUser(ctx);
+
+  if (
+    user.dailyAnswered &&
+    user.dailyQuestion === getTodayKey()
+  ) {
+    return ctx.reply(
+`🎯 DAILY CHALLENGE
+
+✅ You've already completed today's challenge!
+
+🔥 Streak: ${user.streak} days
+
+Come back tomorrow for a new challenge.`,
+      Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            '🏠 Home',
+            'home'
+          )
+        ]
+      ])
+    );
+  }
+
+  user.currentMode = 'daily';
+  user.dailyQuestion =
+    getTodayKey();
+
+  await ctx.reply(
+`🎯 DAILY CHALLENGE
+
+Today's question is waiting.
+
+🔥 Streak: ${user.streak} days
+⭐ Reward: +20 XP
+
+One question.
+One chance.
+Let's go.`,
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          '🚀 Start Challenge',
+          'daily_start'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '⬅️ Home',
+          'home'
+        )
+      ]
+    ])
+  );
+});
+
+bot.action('daily_start', async ctx => {
+  await answerCallback(ctx);
+
+  const user = getUser(ctx);
+
+  user.currentMode = 'daily';
+
+  const question =
+    getDailyQuestion();
+
+  user.practiceQuestions = [question];
+  user.currentQuestionIndex = 0;
+
+  await sendQuestion(ctx);
+});
+
+async function handleDailyAnswer(
+  ctx,
+  user,
+  question,
+  selected
+) {
+  const correct =
+    selected === question.correct;
+
+  if (correct) {
+    user.xp += 20;
+    user.dailyAnswered = true;
+
+    user.questionsAnswered++;
+    user.correctAnswers++;
+
+    await ctx.reply(
+`🎉 CHALLENGE COMPLETE!
+
+✅ Correct!
+
+${question.explanation}
+
+⭐ +20 XP
+
+🔥 Your streak continues!
+
+Come back tomorrow for another challenge.`,
+      Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            '📊 My Progress',
+            'progress_main'
+          )
+        ],
+        [
+          Markup.button.callback(
+            '🏠 Home',
+            'home'
+          )
+        ]
+      ])
+    );
+  } else {
+    user.xp += 5;
+    user.questionsAnswered++;
+
+    await ctx.reply(
+`❌ NOT QUITE
+
+Correct answer:
+${question.options[question.correct]}
+
+💡 ${question.explanation}
+
+⭐ +5 XP for trying!
+
+You can try the challenge again.`,
+      Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            '🔄 Try Again',
+            'daily_start'
+          )
+        ],
+        [
+          Markup.button.callback(
+            '🏠 Home',
+            'home'
+          )
+        ]
+      ])
+    );
+  }
+
+  user.currentMode = 'home';
+}
+// ------------------------------------------------------------
+// MY PROGRESS
+// ------------------------------------------------------------
+
+bot.action('progress_main', async ctx => {
+  await answerCallback(ctx);
+
+  const user = getUser(ctx);
+
+  const accuracy =
+    getAccuracy(user);
+
+  const strongest =
+    getStrongestSubject(user);
+
+  const weakest =
+    getWeakestSubject(user);
+
+  const strongestText =
+    strongest
+      ? `${subjects[strongest[0]].label} — ${strongest[1].accuracy}%`
+      : 'Not enough data yet';
+
+  const weakestText =
+    weakest
+      ? `${subjects[weakest[0]].label} — ${weakest[1].accuracy}%`
+      : 'Not enough data yet';
+
+  await ctx.reply(
+`📊 MY PROGRESS
+
+⭐ XP
+${user.xp}
+
+🔥 Study Streak
+${user.streak} days
+
+🎯 Accuracy
+${accuracy}%
+
+📚 Lessons
+${user.lessonsCompleted.length} completed
+
+✍️ Questions
+${user.questionsAnswered} answered
+
+🧠 Saved Mistakes
+${user.mistakes.length}
+
+━━━━━━━━━━━━━━
+
+📈 Your strongest
+${strongestText}
+
+⚠️ Needs attention
+${weakestText}
+
+🎯 Recommended next
+${weakest
+  ? `Practice ${subjects[weakest[0]].label}`
+  : 'Start a practice session'}`,
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          '📚 Learn',
+          'learn_main'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '✍️ Practice',
+          'practice_main'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🧠 Smart Review',
+          'practice_smart'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🏠 Home',
+          'home'
+        )
+      ]
+    ])
+  );
+});
+// ------------------------------------------------------------
+// EXAM TIPS
+// ------------------------------------------------------------
+
+bot.action('tips_main', async ctx => {
+  await answerCallback(ctx);
+
+  await ctx.reply(
+    `🧠 EXAM TIPS
+
+What do you need?`,
+    tipsKeyboard()
+  );
+});
+
+const examTips = {
+  tip_revision: {
+    title: '📅 REVISION STRATEGY',
+    text:
+`Break your study into small sessions.
+
+1️⃣ Review one topic
+2️⃣ Practice questions
+3️⃣ Review mistakes
+4️⃣ Move forward
+
+Your goal:
+consistency—not cramming.`
+  },
+
+  tip_time: {
+    title: '⏱️ TIME MANAGEMENT',
+    text:
+`Don't spend too long fighting one question.
+
+1️⃣ Answer easy questions first
+2️⃣ Mark difficult questions
+3️⃣ Return later
+4️⃣ Leave time for checking
+
+Your goal is to maximize your total score.`
+  },
+
+  tip_techniques: {
+    title: '📝 EXAM TECHNIQUES',
+    text:
+`1️⃣ Read carefully
+2️⃣ Start with what you know
+3️⃣ Show your working
+4️⃣ Check units and calculations
+5️⃣ Review before submitting`
+  },
+
+  tip_final: {
+    title: '🔥 FINAL WEEK',
+    text:
+`1️⃣ Practice past questions
+2️⃣ Review weak areas
+3️⃣ Avoid last-minute cramming
+4️⃣ Sleep properly
+5️⃣ Stay calm
+
+You've done the work.
+Trust your preparation.`
+  },
+
+  tip_stress: {
+    title: '😰 EXAM STRESS',
+    text:
+`Feeling stressed before an exam is normal.
+
+Try:
+
+1️⃣ Slow, deep breaths
+2️⃣ Break the work into small tasks
+3️⃣ Take short breaks
+4️⃣ Talk to someone you trust
+
+You don't have to solve everything at once.`
+  }
+};
+
+for (const [
+  action,
+  tip
+] of Object.entries(examTips)) {
+  bot.action(action, async ctx => {
+    await answerCallback(ctx);
+
+    await ctx.reply(
+`${tip.title}
+
+${tip.text}`,
+      Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            '🔙 More Tips',
+            'tips_main'
+          )
+        ],
+        [
+          Markup.button.callback(
+            '🏠 Home',
+            'home'
+          )
+        ]
+      ])
+    );
+  });
+}
+// ------------------------------------------------------------
+// STUDY BUDDY
+// ------------------------------------------------------------
+
+bot.action('buddy_main', async ctx => {
+  await answerCallback(ctx);
+
+  await ctx.reply(
+`💬 STUDY BUDDY
+
+What do you need right now?`,
+    buddyKeyboard()
+  );
+});
+
+bot.action('buddy_stressed', async ctx => {
+  await answerCallback(ctx);
+
+  await ctx.reply(
+`😰 I'M STRESSED
+
+That's okay.
+
+You don't need to finish everything today.
+
+Make it smaller:
+
+⏱️ 20 minutes
+📖 One topic
+✍️ 5 questions
+☕ Short break
+
+Small progress is still progress.`,
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          '📚 Start Learning',
+          'learn_main'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '✍️ Start Practice',
+          'practice_main'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '⬅️ Study Buddy',
+          'buddy_main'
+        )
+      ]
+    ])
+  );
+});
+
+bot.action('buddy_confused', async ctx => {
+  await answerCallback(ctx);
+
+  await ctx.reply(
+`😕 I'M CONFUSED
+
+Confusion is part of learning.
+
+Try this:
+
+1️⃣ Go back to the basic concept
+2️⃣ Read the explanation again
+3️⃣ Try an easier question
+4️⃣ Review your mistake
+
+You don't need to understand everything immediately.`,
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          '📚 Try Learning',
+          'learn_main'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🧠 Smart Review',
+          'practice_smart'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '⬅️ Study Buddy',
+          'buddy_main'
+        )
+      ]
+    ])
+  );
+});
+
+bot.action('buddy_plan', async ctx => {
+  await answerCallback(ctx);
+
+  await ctx.reply(
+`📅 SIMPLE STUDY PLAN
+
+Today:
+📖 Review one weak topic
+✍️ Answer 5 questions
+🧠 Review mistakes
+
+Tomorrow:
+📖 Learn another topic
+✍️ Practice again
+
+Later:
+📝 Try a larger practice session
+
+Don't try to conquer everything in one day.`,
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          '🚀 Start Learning',
+          'learn_main'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '✍️ Start Practicing',
+          'practice_main'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '⬅️ Study Buddy',
+          'buddy_main'
+        )
+      ]
+    ])
+  );
+});
+
+bot.action('buddy_motivation', async ctx => {
+  await answerCallback(ctx);
+
+  await ctx.reply(
+`🔥 I NEED MOTIVATION
+
+You already did something important:
+
+You started.
+
+Every lesson you finish,
+every question you answer,
+and every mistake you understand
+moves you forward.
+
+You don't need a perfect day.
+
+You just need the next step.
+
+💪 Keep going.`,
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          '📚 Take the Next Step',
+          'learn_main'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '✍️ Practice',
+          'practice_main'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '⬅️ Study Buddy',
+          'buddy_main'
+        )
+      ]
+    ])
+  );
+});
+
+bot.action('buddy_next', async ctx => {
+  await answerCallback(ctx);
+
+  const user = getUser(ctx);
+
+  const weakest =
+    getWeakestSubject(user);
+
+  if (weakest) {
+    const subjectKey =
+      weakest[0];
+
+    await ctx.reply(
+`📚 YOUR NEXT STEP
+
+Based on your practice:
+
+⚠️ ${subjects[subjectKey].label}
+Current accuracy: ${weakest[1].accuracy}%
+
+I'd recommend practicing this subject next.
+
+Small improvement here can make
+a big difference to your overall progress.`,
+      Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            '✍️ Practice This Subject',
+            `practice_subject_${subjectKey}`
+          )
+        ],
+        [
+          Markup.button.callback(
+            '📚 Learn It',
+            `learn_subject_${subjectKey}`
+          )
+        ],
+        [
+          Markup.button.callback(
+            '🏠 Home',
+            'home'
+          )
+        ]
+      ])
+    );
+
+    return;
+  }
+
+  await ctx.reply(
+`📚 YOUR NEXT STEP
+
+You haven't built enough practice data yet.
+
+Start with one subject and answer
+a few questions.
+
+FineBot will learn your strengths
+and weaknesses as you practice.`,
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          '✍️ Start Practice',
+          'practice_main'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🏠 Home',
+          'home'
+        )
+      ]
+    ])
+  );
+});
+// ------------------------------------------------------------
+// SUPPORT
+// ------------------------------------------------------------
+
+bot.action('support_main', async ctx => {
+  await answerCallback(ctx);
+
+  await ctx.reply(
+`📞 SUPPORT
+
+How can we help?`,
+    supportKeyboard()
+  );
+});
+
+bot.action('support_how', async ctx => {
+  await answerCallback(ctx);
+
+  await ctx.reply(
+`❓ HOW FINEBOT WORKS
+
+FineBot helps you:
+
+📚 Learn curriculum topics
+✍️ Practice questions
+🎯 Complete daily challenges
+📊 Track your progress
+🧠 Review mistakes
+💬 Get study support
+
+The goal is simple:
+
+Learn → Practice → Improve.`,
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          '📞 Support',
+          'support_main'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🏠 Home',
+          'home'
+        )
+      ]
+    ])
+  );
+});
+
+bot.action('support_payment', async ctx => {
+  await answerCallback(ctx);
+
+  await ctx.reply(
+`💳 PAYMENT HELP
+
+Payment integration can be connected
+to your local payment methods.
+
+If you have a payment problem,
+please contact FineBot support.`,
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          '📞 Support',
+          'support_main'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🏠 Home',
+          'home'
+        )
+      ]
+    ])
+  );
+});
+
+bot.action('support_access', async ctx => {
+  await answerCallback(ctx);
+
+  await ctx.reply(
+`🔓 ACCESS PROBLEM
+
+If you have already purchased access
+but cannot use a feature, please contact
+support with your Telegram username
+and payment information.
+
+Please don't send passwords or private
+security codes.`,
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          '📞 Support',
+          'support_main'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🏠 Home',
+          'home'
+        )
+      ]
+    ])
+  );
+});
+
+bot.action('support_report', async ctx => {
+  await answerCallback(ctx);
+
+  await ctx.reply(
+`🐛 REPORT A PROBLEM
+
+Found something incorrect?
+
+Please send:
+
+• Subject
+• Topic
+• Question
+• What seems wrong
+
+This helps us improve FineBot.`,
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          '📞 Support',
+          'support_main'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🏠 Home',
+          'home'
+        )
+      ]
+    ])
+  );
+});
+
+bot.action('support_feedback', async ctx => {
+  await answerCallback(ctx);
+
+  await ctx.reply(
+`💡 SEND FEEDBACK
+
+Your feedback matters.
+
+Tell us what you like,
+what feels confusing,
+and what you would improve.
+
+Good products are built by listening.`,
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          '📞 Support',
+          'support_main'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🏠 Home',
+          'home'
+        )
+      ]
+    ])
+  );
+});
+
+bot.action('support_tech', async ctx => {
+  await answerCallback(ctx);
+
+  await ctx.reply(
+`🛠️ TECHNICAL SUPPORT
+
+If something isn't working:
+
+1️⃣ Try opening the section again
+2️⃣ Press Home
+3️⃣ Restart the conversation
+4️⃣ If the problem continues, report it
+
+We're working to keep FineBot simple
+and reliable.`,
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          '📞 Support',
+          'support_main'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🏠 Home',
+          'home'
+        )
+      ]
+    ])
+  );
+});
+// ------------------------------------------------------------
+// COMMANDS + ERROR HANDLING + VERCEL
+// ------------------------------------------------------------
+
+bot.command('home', async ctx => {
+  await showHome(ctx);
+});
+
+bot.command('progress', async ctx => {
+  await ctx.reply(
+    'Use the button below to open your progress.',
+    Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          '📊 My Progress',
+          'progress_main'
+        )
+      ]
+    ])
+  );
+});
+
+// ------------------------------------------------------------
+// ERROR HANDLING
+// ------------------------------------------------------------
+
+bot.catch((error, ctx) => {
+  console.error(
+    'FineBot error:',
+    error
+  );
+
+  try {
+    ctx.reply(
+      '⚠️ Something went wrong. Please return to Home and try again.'
+    );
+  } catch (_) {
+    // Ignore secondary Telegram errors.
+  }
+});
+
+// ------------------------------------------------------------
+// VERCEL WEBHOOK
+// ------------------------------------------------------------
+
+module.exports = async function handler(
+  req,
+  res
+) {
+  try {
+    if (req.method === 'GET') {
+      return res.status(200).json({
+        ok: true,
+        bot: 'FineBot',
+        message:
+          'FineBot webhook is running.'
+      });
+    }
+
+    if (req.method !== 'POST') {
+      return res.status(405).json({
+        ok: false,
+        error: 'Method not allowed.'
+      });
+    }
+
+    await bot.handleUpdate(
+      req.body
+    );
+
+    return res.status(200).json({
+      ok: true
+    });
+
+  } catch (error) {
+    console.error(
+      'FineBot webhook error:',
+      error
+    );
+
+    return res.status(500).json({
+      ok: false,
+      error: 'Internal server error.'
+    });
+  }
+};
