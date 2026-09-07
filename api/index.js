@@ -1,9 +1,9 @@
-const { Telegraf, Markup } = require("telegraf");
+ const { Telegraf, Markup } = require('telegraf');
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
 // ============================================================
-// FINEBOT — GRADE 12 MASTERING BOT
+// FINEBOT — GRADE 12 PROBLEM SOLVING BOT
 // ============================================================
 
 // ------------------------------------------------------------
@@ -12,17 +12,49 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 
 const subjects = {
   natural: [
-    { id: "biology", name: "Biology", emoji: "🧬" },
-    { id: "chemistry", name: "Chemistry", emoji: "⚗️" },
-    { id: "physics", name: "Physics", emoji: "⚛️" },
-    { id: "mathematics", name: "Mathematics", emoji: "➗" }
+    {
+      id: 'biology',
+      name: 'Biology',
+      emoji: '🧬'
+    },
+    {
+      id: 'chemistry',
+      name: 'Chemistry',
+      emoji: '⚗️'
+    },
+    {
+      id: 'physics',
+      name: 'Physics',
+      emoji: '⚛️'
+    },
+    {
+      id: 'mathematics',
+      name: 'Mathematics',
+      emoji: '➗'
+    }
   ],
 
   social: [
-    { id: "history", name: "History", emoji: "📜" },
-    { id: "geography", name: "Geography", emoji: "🌍" },
-    { id: "economics", name: "Economics", emoji: "📈" },
-    { id: "english", name: "English", emoji: "🇬🇧" }
+    {
+      id: 'history',
+      name: 'History',
+      emoji: '📜'
+    },
+    {
+      id: 'geography',
+      name: 'Geography',
+      emoji: '🌍'
+    },
+    {
+      id: 'economics',
+      name: 'Economics',
+      emoji: '📈'
+    },
+    {
+      id: 'english',
+      name: 'English',
+      emoji: '🇬🇧'
+    }
   ]
 };
 
@@ -31,216 +63,344 @@ const subjects = {
 // QUESTION BANK
 // ------------------------------------------------------------
 
-const questionBank = {
+const questions = {
 
-  Biology: [
-    {
-      question: "What is the powerhouse of the cell?",
-      answer: "mitochondria",
-      explanation:
-        "Mitochondria produce most of the cell's usable energy in the form of ATP."
-    },
-    {
-      question: "What molecule carries genetic information?",
-      answer: "DNA",
-      explanation:
-        "DNA stores the genetic instructions used by living organisms."
-    }
-  ],
+  biology: [
 
-  Chemistry: [
     {
-      question: "What is the chemical formula of water?",
-      answer: "H2O",
-      explanation:
-        "A water molecule contains two hydrogen atoms and one oxygen atom."
-    },
-    {
-      question: "What is the pH of a neutral solution at 25°C?",
-      answer: "7",
-      explanation:
-        "At 25°C, a neutral solution has a pH of 7."
-    }
-  ],
+      topic: 'Cell Biology',
 
-  Physics: [
-    {
-      question: "What is the formula for force?",
-      answer: "F = ma",
-      explanation:
-        "Newton's second law states that force equals mass multiplied by acceleration."
-    },
-    {
-      question: "What is the SI unit of force?",
-      answer: "newton",
-      explanation:
-        "The SI unit of force is the newton (N)."
-    }
-  ],
-
-  Mathematics: [
-    {
-      question: "Solve: 5x + 3 = 13.",
-      answer: "2",
-      explanation:
-        "5x = 10, therefore x = 2."
-    },
-    {
-      question: "What is the derivative of x²?",
-      answer: "2x",
-      explanation:
-        "Using the power rule, d(x²)/dx = 2x."
-    }
-  ],
-
-  History: [
-    {
       question:
-        "According to Ethiopian tradition, who is regarded as the first emperor of Ethiopia?",
-      answer: "Menelik I",
+        'Which organelle is mainly responsible for producing ATP in a eukaryotic cell?',
+
+      options: [
+        'A. Nucleus',
+        'B. Mitochondrion',
+        'C. Ribosome',
+        'D. Golgi apparatus'
+      ],
+
+      answer: 'B',
+
       explanation:
-        "Menelik I is traditionally regarded as the first emperor of Ethiopia."
+        'The mitochondrion produces most of the cell’s ATP through cellular respiration. ATP is the main usable energy currency of the cell.'
+    },
+
+    {
+      topic: 'Genetics',
+
+      question:
+        'If a heterozygous tall plant (Tt) is crossed with another heterozygous tall plant (Tt), what percentage of the offspring are expected to be short (tt)?',
+
+      options: [
+        'A. 0%',
+        'B. 25%',
+        'C. 50%',
+        'D. 75%'
+      ],
+
+      answer: 'B',
+
+      explanation:
+        'The cross Tt × Tt gives TT, Tt, Tt and tt. One out of four offspring is tt, giving 25%.'
     }
+
   ],
 
-  Geography: [
+
+  chemistry: [
+
     {
-      question: "What is the capital city of Ethiopia?",
-      answer: "Addis Ababa",
+      topic: 'Moles',
+
+      question:
+        'How many moles are present in 18 g of water (H₂O)? Use H = 1 and O = 16.',
+
+      options: [
+        'A. 0.5 mol',
+        'B. 1 mol',
+        'C. 2 mol',
+        'D. 18 mol'
+      ],
+
+      answer: 'B',
+
       explanation:
-        "Addis Ababa is the capital and largest city of Ethiopia."
+        'Molar mass of H₂O = (2 × 1) + 16 = 18 g/mol. Therefore, moles = mass ÷ molar mass = 18 ÷ 18 = 1 mol.'
+    },
+
+    {
+      topic: 'Chemical Equations',
+
+      question:
+        'Which equation is correctly balanced for the formation of water?',
+
+      options: [
+        'A. H₂ + O₂ → H₂O',
+        'B. 2H₂ + O₂ → 2H₂O',
+        'C. H₂ + 2O₂ → H₂O',
+        'D. 2H₂ + 2O₂ → H₂O'
+      ],
+
+      answer: 'B',
+
+      explanation:
+        'The balanced equation is 2H₂ + O₂ → 2H₂O. There are four hydrogen atoms and two oxygen atoms on both sides.'
     }
+
   ],
 
-  Economics: [
+
+  physics: [
+
     {
-      question: "What is inflation?",
-      answer: "increase in prices",
+      topic: 'Mechanics',
+
+      question:
+        'A car accelerates from rest at 2 m/s² for 5 seconds. What is its final velocity?',
+
+      options: [
+        'A. 2 m/s',
+        'B. 5 m/s',
+        'C. 10 m/s',
+        'D. 20 m/s'
+      ],
+
+      answer: 'C',
+
       explanation:
-        "Inflation is a sustained increase in the general price level of goods and services."
+        'Use v = u + at. Since the car starts from rest, u = 0. Therefore v = 0 + (2 × 5) = 10 m/s.'
+    },
+
+    {
+      topic: 'Force',
+
+      question:
+        'A 5 kg object accelerates at 4 m/s². What force acts on the object?',
+
+      options: [
+        'A. 1.25 N',
+        'B. 9 N',
+        'C. 20 N',
+        'D. 25 N'
+      ],
+
+      answer: 'C',
+
+      explanation:
+        'Newton’s second law states F = ma. Therefore F = 5 × 4 = 20 N.'
     }
+
   ],
 
-  English: [
+
+  mathematics: [
+
     {
-      question: "What is a noun?",
-      answer: "person place thing",
+      topic: 'Linear Equations',
+
+      question:
+        'Solve: 5x + 3 = 18',
+
+      options: [
+        'A. x = 2',
+        'B. x = 3',
+        'C. x = 4',
+        'D. x = 5'
+      ],
+
+      answer: 'B',
+
       explanation:
-        "A noun is traditionally described as a word naming a person, place, thing, or idea."
+        'Subtract 3 from both sides: 5x = 15. Divide by 5: x = 3.'
+    },
+
+    {
+      topic: 'Quadratic Equations',
+
+      question:
+        'What are the solutions of x² − 5x + 6 = 0?',
+
+      options: [
+        'A. x = 1 and x = 6',
+        'B. x = 2 and x = 3',
+        'C. x = -2 and x = -3',
+        'D. x = 0 and x = 5'
+      ],
+
+      answer: 'B',
+
+      explanation:
+        'Factor the equation: x² − 5x + 6 = (x − 2)(x − 3). Therefore x = 2 or x = 3.'
     }
+
+  ],
+
+
+  history: [
+
+    {
+      topic: 'Ethiopian History',
+
+      question:
+        'Which ancient Ethiopian kingdom is associated with the city of Aksum?',
+
+      options: [
+        'A. Aksumite Kingdom',
+        'B. Ottoman Empire',
+        'C. Mali Empire',
+        'D. Roman Empire'
+      ],
+
+      answer: 'A',
+
+      explanation:
+        'The ancient city of Aksum was the center of the Aksumite Kingdom, one of the major civilizations of the ancient Horn of Africa.'
+    }
+
+  ],
+
+
+  geography: [
+
+    {
+      topic: 'Physical Geography',
+
+      question:
+        'Which process is primarily responsible for the wearing away of rocks and soil by moving water, wind, or ice?',
+
+      options: [
+        'A. Condensation',
+        'B. Erosion',
+        'C. Evaporation',
+        'D. Precipitation'
+      ],
+
+      answer: 'B',
+
+      explanation:
+        'Erosion is the removal and transportation of soil and rock materials by agents such as water, wind and ice.'
+    }
+
+  ],
+
+
+  economics: [
+
+    {
+      topic: 'Inflation',
+
+      question:
+        'What generally happens to the purchasing power of money when the overall price level rises significantly?',
+
+      options: [
+        'A. It increases',
+        'B. It decreases',
+        'C. It remains exactly the same',
+        'D. It becomes unlimited'
+      ],
+
+      answer: 'B',
+
+      explanation:
+        'When prices rise, the same amount of money can generally buy fewer goods and services. Therefore purchasing power decreases.'
+    }
+
+  ],
+
+
+  english: [
+
+    {
+      topic: 'Grammar',
+
+      question:
+        'Which word is the noun in the sentence: "The student solved the problem quickly."?',
+
+      options: [
+        'A. solved',
+        'B. quickly',
+        'C. student',
+        'D. the'
+      ],
+
+      answer: 'C',
+
+      explanation:
+        'A noun names a person, place, thing or idea. "Student" is the noun in this sentence.'
+    }
+
   ]
+
 };
 
 
 // ------------------------------------------------------------
-// SUBJECT NAME MAP
-// ------------------------------------------------------------
-
-const subjectNames = {
-  biology: "Biology",
-  chemistry: "Chemistry",
-  physics: "Physics",
-  mathematics: "Mathematics",
-  history: "History",
-  geography: "Geography",
-  economics: "Economics",
-  english: "English"
-};
-
-
-// ------------------------------------------------------------
-// USER SESSION STATE
+// USER SESSION DATA
 // ------------------------------------------------------------
 
 const userState = {};
 
-function getUser(userId) {
 
-  if (!userState[userId]) {
+// ------------------------------------------------------------
+// SUBJECT LOOKUP
+// ------------------------------------------------------------
 
-    userState[userId] = {
-      subject: null,
-      questionIndex: 0,
-      score: 0,
-      answered: 0,
-      total: 0,
-      questions: null
-    };
+const allSubjects = [
+  ...subjects.natural,
+  ...subjects.social
+];
 
-  }
+const subjectMap = {};
 
-  return userState[userId];
-}
+allSubjects.forEach(subject => {
+  subjectMap[subject.id] = subject;
+});
 
 
 // ------------------------------------------------------------
 // MAIN KEYBOARD
 // ------------------------------------------------------------
 
-const mainKeyboard = () =>
-  Markup.inlineKeyboard([
+function mainKeyboard() {
+
+  return Markup.inlineKeyboard([
 
     [
-      Markup.button.callback("📚 Learn", "learn"),
-      Markup.button.callback("✍️ Practice", "practice")
+      Markup.button.callback('📚 Learn', 'learn'),
+      Markup.button.callback('✍️ Practice', 'practice')
     ],
 
     [
-      Markup.button.callback("🎯 Daily Challenge", "daily"),
-      Markup.button.callback("🧠 Exam Tips", "tips")
+      Markup.button.callback('🎯 Challenge', 'challenge'),
+      Markup.button.callback('📊 Progress', 'progress')
     ],
 
     [
-      Markup.button.callback("📊 My Progress", "progress"),
-      Markup.button.callback("💬 Study Buddy", "buddy")
+      Markup.button.callback('💬 Study Buddy', 'buddy'),
+      Markup.button.callback('🧠 Exam Ready', 'exam')
     ],
 
     [
-      Markup.button.callback("📞 Contact", "contact")
+      Markup.button.callback('📞 Contact', 'contact')
     ]
 
   ]);
+}
 
 
 // ------------------------------------------------------------
-// HOME BUTTON
+// BACK HOME BUTTON
 // ------------------------------------------------------------
 
-const backHomeKeyboard = () =>
-  Markup.inlineKeyboard([
+function backHomeKeyboard() {
+
+  return Markup.inlineKeyboard([
     [
-      Markup.button.callback("🏠 Main Menu", "home")
+      Markup.button.callback('🏠 Main Menu', 'home')
     ]
   ]);
 
-
-// ------------------------------------------------------------
-// EDIT MENU HELPER
-// ------------------------------------------------------------
-
-async function editMenu(ctx, text, keyboard) {
-
-  try {
-
-    if (ctx.callbackQuery && ctx.callbackQuery.message) {
-
-      await ctx.editMessageText(text, {
-        parse_mode: "HTML",
-        ...keyboard
-      });
-
-      await ctx.answerCbQuery();
-
-      return;
-    }
-
-  } catch (error) {
-
-    console.log("Menu edit fallback:", error.message);
-
-  }
-
-  await ctx.replyWithHTML(text, keyboard);
 }
 
 
@@ -250,18 +410,45 @@ async function editMenu(ctx, text, keyboard) {
 
 async function showHome(ctx) {
 
-  const text =
-    `🌟 <b>WELCOME TO FINEBOT</b> 🌟\n\n` +
-    `<b>Ethiopian Grade 12 Mastering Buddy</b>\n\n` +
-    `Your goal isn't just to memorize.\n` +
-    `It's to <b>understand → practice → improve → master.</b>\n\n` +
-    `🎯 <i>What do you want to do today?</i>`;
+  const message =
 
-  await editMenu(
-    ctx,
-    text,
-    mainKeyboard()
-  );
+`🌟 <b>FINEBOT</b>
+
+🎓 <b>Your Grade 12 Mastering Companion</b>
+
+Learn smarter.
+Practice harder.
+Understand why.
+
+<b>What do you want to do?</b> 👇`;
+
+  try {
+
+    if (ctx.callbackQuery) {
+
+      await ctx.editMessageText(
+        message,
+        {
+          parse_mode: 'HTML',
+          ...mainKeyboard()
+        }
+      );
+
+    } else {
+
+      await ctx.replyWithHTML(
+        message,
+        mainKeyboard()
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error('Home error:', error);
+
+  }
+
 }
 
 
@@ -270,6 +457,15 @@ async function showHome(ctx) {
 // ------------------------------------------------------------
 
 bot.start(async (ctx) => {
+
+  userState[ctx.from.id] = {
+    score: 0,
+    attempted: 0,
+    correct: 0,
+    currentSubject: null,
+    currentQuestion: null,
+    currentIndex: 0
+  };
 
   await showHome(ctx);
 
@@ -280,7 +476,9 @@ bot.start(async (ctx) => {
 // HOME
 // ------------------------------------------------------------
 
-bot.action("home", async (ctx) => {
+bot.action('home', async (ctx) => {
+
+  await ctx.answerCbQuery();
 
   await showHome(ctx);
 
@@ -288,46 +486,49 @@ bot.action("home", async (ctx) => {
 
 
 // ------------------------------------------------------------
-// LEARN MENU
+// LEARN
 // ------------------------------------------------------------
 
-bot.action("learn", async (ctx) => {
+bot.action('learn', async (ctx) => {
 
-  const text =
-    `📚 <b>LEARN</b>\n\n` +
-    `Choose your Grade 12 stream:\n\n` +
-    `🌿 <b>Natural Science</b>\n` +
-    `Biology • Chemistry • Physics • Mathematics\n\n` +
-    `🏛️ <b>Social Science</b>\n` +
-    `History • Geography • Economics • English`;
+  await ctx.answerCbQuery();
 
-  await editMenu(
-    ctx,
-    text,
-    Markup.inlineKeyboard([
+  await ctx.editMessageText(
 
-      [
-        Markup.button.callback(
-          "🌿 Natural Science",
-          "natural"
-        )
-      ],
+`📚 <b>LEARN</b>
 
-      [
-        Markup.button.callback(
-          "🏛️ Social Science",
-          "social"
-        )
-      ],
+Build your knowledge before you test it.
 
-      [
-        Markup.button.callback(
-          "🏠 Main Menu",
-          "home"
-        )
-      ]
+Choose your stream 👇`,
 
-    ])
+    {
+      parse_mode: 'HTML',
+      ...Markup.inlineKeyboard([
+
+        [
+          Markup.button.callback(
+            '🌿 Natural Science',
+            'natural'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '🏛️ Social Science',
+            'social'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '🏠 Main Menu',
+            'home'
+          )
+        ]
+
+      ])
+    }
+
   );
 
 });
@@ -337,46 +538,34 @@ bot.action("learn", async (ctx) => {
 // NATURAL SCIENCE
 // ------------------------------------------------------------
 
-bot.action("natural", async (ctx) => {
+bot.action('natural', async (ctx) => {
 
-  const buttons = subjects.natural.map(subject =>
+  await ctx.answerCbQuery();
+
+  const buttons = subjects.natural.map(subject => [
+
     Markup.button.callback(
       `${subject.emoji} ${subject.name}`,
-      `learn_${subject.id}`
+      `subject_${subject.id}`
     )
-  );
 
-  await editMenu(
-    ctx,
-    `🌿 <b>NATURAL SCIENCE</b>\n\n` +
-    `Choose a subject to explore:`,
-    Markup.inlineKeyboard([
+  ]);
 
-      [
-        buttons[0],
-        buttons[1]
-      ],
+  buttons.push([
+    Markup.button.callback('🔙 Back', 'learn')
+  ]);
 
-      [
-        buttons[2],
-        buttons[3]
-      ],
+  await ctx.editMessageText(
 
-      [
-        Markup.button.callback(
-          "🔙 Streams",
-          "learn"
-        )
-      ],
+`🌿 <b>NATURAL SCIENCE</b>
 
-      [
-        Markup.button.callback(
-          "🏠 Main Menu",
-          "home"
-        )
-      ]
+Choose a subject 👇`,
 
-    ])
+    {
+      parse_mode: 'HTML',
+      ...Markup.inlineKeyboard(buttons)
+    }
+
   );
 
 });
@@ -386,114 +575,34 @@ bot.action("natural", async (ctx) => {
 // SOCIAL SCIENCE
 // ------------------------------------------------------------
 
-bot.action("social", async (ctx) => {
+bot.action('social', async (ctx) => {
 
-  const buttons = subjects.social.map(subject =>
+  await ctx.answerCbQuery();
+
+  const buttons = subjects.social.map(subject => [
+
     Markup.button.callback(
       `${subject.emoji} ${subject.name}`,
-      `learn_${subject.id}`
+      `subject_${subject.id}`
     )
-  );
 
-  await editMenu(
-    ctx,
-    `🏛️ <b>SOCIAL SCIENCE</b>\n\n` +
-    `Choose a subject to explore:`,
-    Markup.inlineKeyboard([
+  ]);
 
-      [
-        buttons[0],
-        buttons[1]
-      ],
+  buttons.push([
+    Markup.button.callback('🔙 Back', 'learn')
+  ]);
 
-      [
-        buttons[2],
-        buttons[3]
-      ],
+  await ctx.editMessageText(
 
-      [
-        Markup.button.callback(
-          "🔙 Streams",
-          "learn"
-        )
-      ],
+`🏛️ <b>SOCIAL SCIENCE</b>
 
-      [
-        Markup.button.callback(
-          "🏠 Main Menu",
-          "home"
-        )
-      ]
+Choose a subject 👇`,
 
-    ])
-  );
+    {
+      parse_mode: 'HTML',
+      ...Markup.inlineKeyboard(buttons)
+    }
 
-});
-
-// ============================================================
-// PART 2 — LEARNING + PRACTICE ENGINE
-// ============================================================
-
-
-// ------------------------------------------------------------
-// SUBJECT PAGE
-// ------------------------------------------------------------
-
-bot.action(/^learn_(.+)$/, async (ctx) => {
-
-  const id = ctx.match[1];
-
-  const subject = subjectNames[id];
-
-  if (!subject) return;
-
-  const questionCount =
-    questionBank[subject]
-      ? questionBank[subject].length
-      : 0;
-
-  await editMenu(
-    ctx,
-
-    `📘 <b>${subject}</b>\n\n` +
-
-    `Build your understanding, then test yourself.\n\n` +
-
-    `📝 Practice questions: <b>${questionCount}</b>\n\n` +
-
-    `Choose what you want to do:`,
-
-    Markup.inlineKeyboard([
-
-      [
-        Markup.button.callback(
-          "✍️ Practice",
-          `start_${id}`
-        )
-      ],
-
-      [
-        Markup.button.callback(
-          "📖 Subject Overview",
-          `overview_${id}`
-        )
-      ],
-
-      [
-        Markup.button.callback(
-          "🔙 Subjects",
-          "learn"
-        )
-      ],
-
-      [
-        Markup.button.callback(
-          "🏠 Main Menu",
-          "home"
-        )
-      ]
-
-    ])
   );
 
 });
@@ -503,177 +612,157 @@ bot.action(/^learn_(.+)$/, async (ctx) => {
 // SUBJECT OVERVIEW
 // ------------------------------------------------------------
 
-bot.action(/^overview_(.+)$/, async (ctx) => {
+bot.action(/subject_(.+)/, async (ctx) => {
 
-  const id = ctx.match[1];
+  await ctx.answerCbQuery();
 
-  const subject = subjectNames[id];
+  const subjectId = ctx.match[1];
+
+  const subject = subjectMap[subjectId];
 
   if (!subject) return;
 
-  await editMenu(
-    ctx,
+  const questionCount =
+    questions[subjectId]
+      ? questions[subjectId].length
+      : 0;
 
-    `📖 <b>${subject} — STUDY MODE</b>\n\n` +
+  await ctx.editMessageText(
 
-    `Use this section to build your understanding before jumping into practice.\n\n` +
+`${subject.emoji} <b>${subject.name}</b>
 
-    `💡 <b>Mastery Rule</b>\n` +
-    `Don't memorize an answer you don't understand.\n\n` +
+📖 Available practice questions: <b>${questionCount}</b>
 
-    `Understand the idea → explain it yourself → practice it.\n\n` +
+Choose what you want to do:
 
-    `🎯 <i>Ready to test yourself?</i>`,
+✍️ Practice this subject
+🎯 Test yourself
+📚 Continue learning`,
 
-    Markup.inlineKeyboard([
+    {
+      parse_mode: 'HTML',
 
-      [
-        Markup.button.callback(
-          "✍️ Start Practice",
-          `start_${id}`
-        )
-      ],
+      ...Markup.inlineKeyboard([
 
-      [
-        Markup.button.callback(
-          "🔙 Subject",
-          `learn_${id}`
-        )
-      ]
+        [
+          Markup.button.callback(
+            '✍️ Practice',
+            `practice_${subjectId}`
+          )
+        ],
 
-    ])
-  );
+        [
+          Markup.button.callback(
+            '🎯 Challenge',
+            `challenge_${subjectId}`
+          )
+        ],
 
-});
+        [
+          Markup.button.callback(
+            '🔙 Back',
+            subjectId === 'biology' ||
+            subjectId === 'chemistry' ||
+            subjectId === 'physics' ||
+            subjectId === 'mathematics'
+              ? 'natural'
+              : 'social'
+          )
+        ]
 
-
-// ------------------------------------------------------------
-// PRACTICE MENU
-// ------------------------------------------------------------
-
-bot.action("practice", async (ctx) => {
-
-  await editMenu(
-    ctx,
-
-    `✍️ <b>PRACTICE ARENA</b>\n\n` +
-
-    `Choose a subject and challenge yourself.\n\n` +
-
-    `🔥 <i>Don't worry about getting everything right.</i>\n` +
-
-    `Every wrong answer shows you what to improve.`,
-
-    Markup.inlineKeyboard([
-
-      [
-        Markup.button.callback(
-          "🧬 Biology",
-          "start_biology"
-        ),
-
-        Markup.button.callback(
-          "⚗️ Chemistry",
-          "start_chemistry"
-        )
-      ],
-
-      [
-        Markup.button.callback(
-          "⚛️ Physics",
-          "start_physics"
-        ),
-
-        Markup.button.callback(
-          "➗ Mathematics",
-          "start_mathematics"
-        )
-      ],
-
-      [
-        Markup.button.callback(
-          "📜 History",
-          "start_history"
-        ),
-
-        Markup.button.callback(
-          "🌍 Geography",
-          "start_geography"
-        )
-      ],
-
-      [
-        Markup.button.callback(
-          "📈 Economics",
-          "start_economics"
-        ),
-
-        Markup.button.callback(
-          "🇬🇧 English",
-          "start_english"
-        )
-      ],
-
-      [
-        Markup.button.callback(
-          "🎲 Mixed Practice",
-          "start_mixed"
-        )
-      ],
-
-      [
-        Markup.button.callback(
-          "🏠 Main Menu",
-          "home"
-        )
-      ]
-
-    ])
-  );
-
-});
-
-
-// ------------------------------------------------------------
-// START PRACTICE
-// ------------------------------------------------------------
-
-bot.action(/^start_(.+)$/, async (ctx) => {
-
-  const id = ctx.match[1];
-
-  let questions = [];
-
-  // Mixed practice
-  if (id === "mixed") {
-
-    Object.values(questionBank).forEach(list => {
-      questions.push(...list);
-    });
-
-  }
-
-  // Subject practice
-  else {
-
-    const subject = subjectNames[id];
-
-    if (!subject || !questionBank[subject]) {
-      return;
+      ])
     }
 
-    questions = questionBank[subject];
+  );
+
+});
+// ============================================================
+// PART 2 — PROBLEM-SOLVING ENGINE
+// ============================================================
+
+
+// ------------------------------------------------------------
+// GET / CREATE USER STATE
+// ------------------------------------------------------------
+
+function getUserState(userId) {
+
+  if (!userState[userId]) {
+
+    userState[userId] = {
+      score: 0,
+      attempted: 0,
+      correct: 0,
+
+      currentSubject: null,
+      currentQuestion: null,
+      currentIndex: 0,
+
+      answered: false
+    };
 
   }
 
-  const user = getUser(ctx.from.id);
+  return userState[userId];
 
-  user.subject = id;
-  user.questionIndex = 0;
-  user.score = 0;
-  user.answered = 0;
-  user.total = questions.length;
-  user.questions = questions;
+}
+
+
+// ------------------------------------------------------------
+// SHUFFLE ARRAY
+// ------------------------------------------------------------
+
+function shuffle(array) {
+
+  const copy = [...array];
+
+  for (let i = copy.length - 1; i > 0; i--) {
+
+    const j = Math.floor(Math.random() * (i + 1));
+
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+
+  }
+
+  return copy;
+
+}
+
+
+// ------------------------------------------------------------
+// START SUBJECT PRACTICE
+// ------------------------------------------------------------
+
+bot.action(/practice_(.+)/, async (ctx) => {
+
+  await ctx.answerCbQuery();
+
+  const subjectId = ctx.match[1];
+
+  const subject = subjectMap[subjectId];
+
+  if (!subject || !questions[subjectId]) {
+
+    return ctx.answerCbQuery(
+      'No questions available yet.',
+      { show_alert: true }
+    );
+
+  }
+
+  const state = getUserState(ctx.from.id);
+
+  state.currentSubject = subjectId;
+  state.currentIndex = 0;
+  state.score = 0;
+  state.attempted = 0;
+  state.correct = 0;
+  state.answered = false;
+
+  // Randomize the question order
+  state.questionOrder = shuffle(
+    questions[subjectId].map((_, index) => index)
+  );
 
   await sendQuestion(ctx);
 
@@ -686,91 +775,293 @@ bot.action(/^start_(.+)$/, async (ctx) => {
 
 async function sendQuestion(ctx) {
 
-  const user = getUser(ctx.from.id);
+  const state = getUserState(ctx.from.id);
 
-  // Practice finished
-  if (
-    !user.questions ||
-    user.questionIndex >= user.questions.length
-  ) {
+  const subjectId = state.currentSubject;
 
-    await showResults(ctx);
+  if (!subjectId) return;
 
-    return;
+  const subject = subjectMap[subjectId];
+
+  const order = state.questionOrder || [];
+
+  const questionIndex =
+    order[state.currentIndex];
+
+  const question =
+    questions[subjectId][questionIndex];
+
+  if (!question) {
+
+    return showResults(ctx);
 
   }
 
-  const q =
-    user.questions[user.questionIndex];
+  state.currentQuestion = question;
+  state.answered = false;
 
-  const number =
-    user.questionIndex + 1;
+  const total = order.length;
 
-  const total =
-    user.questions.length;
+  const questionNumber =
+    state.currentIndex + 1;
 
-  // Visual progress bar
-  const progress =
-    "🟩".repeat(
-      Math.min(
-        Math.round(
-          (number - 1) / total * 5
-        ),
-        5
-      )
-    ) +
-    "⬜".repeat(
-      Math.max(
-        0,
-        5 -
-        Math.min(
-          Math.round(
-            (number - 1) / total * 5
-          ),
-          5
-        )
-      )
+  const progressBar =
+    createProgressBar(
+      questionNumber,
+      total
     );
 
   const text =
-    `✍️ <b>PRACTICE ARENA</b>\n\n` +
 
-    `Question <b>${number}/${total}</b>\n\n` +
+`${subject.emoji} <b>${subject.name.toUpperCase()}</b>
 
-    `${q.question}\n\n` +
+${progressBar}
 
-    `${progress}\n\n` +
+<b>Question ${questionNumber}/${total}</b>
 
-    `💬 <i>Type your answer below.</i>`;
+🧠 <b>${question.topic}</b>
 
-  await editMenu(
-    ctx,
-    text,
+${question.question}
 
-    Markup.inlineKeyboard([
+<i>Choose the best answer:</i>`;
 
-      [
-        Markup.button.callback(
-          "🏠 Quit Practice",
-          "home"
-        )
-      ]
+  const buttons = question.options.map(option => {
 
-    ])
+    return [
+      Markup.button.callback(
+        option,
+        `answer_${option.charAt(0)}`
+      )
+    ];
+
+  });
+
+  buttons.push([
+    Markup.button.callback(
+      '🏠 Exit Practice',
+      'practice_exit'
+    )
+  ]);
+
+  try {
+
+    if (ctx.callbackQuery) {
+
+      await ctx.editMessageText(
+        text,
+        {
+          parse_mode: 'HTML',
+          ...Markup.inlineKeyboard(buttons)
+        }
+      );
+
+    } else {
+
+      await ctx.replyWithHTML(
+        text,
+        Markup.inlineKeyboard(buttons)
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error('Send question error:', error);
+
+  }
+
+}
+
+
+// ------------------------------------------------------------
+// PROGRESS BAR
+// ------------------------------------------------------------
+
+function createProgressBar(current, total) {
+
+  const length = 10;
+
+  const filled =
+    Math.round(
+      (current / total) * length
+    );
+
+  const empty =
+    length - filled;
+
+  return (
+    '🟩'.repeat(filled) +
+    '⬜'.repeat(empty)
   );
 
 }
 
 
 // ------------------------------------------------------------
+// ANSWER BUTTON
+// ------------------------------------------------------------
+
+bot.action(/answer_([A-D])/, async (ctx) => {
+
+  await ctx.answerCbQuery();
+
+  const state = getUserState(ctx.from.id);
+
+  const question = state.currentQuestion;
+
+  if (!question) {
+
+    return ctx.answerCbQuery(
+      'This question has expired.',
+      { show_alert: true }
+    );
+
+  }
+
+  // Prevent multiple answers
+  if (state.answered) {
+
+    return ctx.answerCbQuery(
+      'You already answered this question.',
+      { show_alert: true }
+    );
+
+  }
+
+  const selectedAnswer =
+    ctx.match[1];
+
+  const correctAnswer =
+    question.answer;
+
+  const isCorrect =
+    selectedAnswer === correctAnswer;
+
+  state.answered = true;
+
+  state.attempted++;
+
+  if (isCorrect) {
+
+    state.correct++;
+    state.score++;
+
+  }
+
+  // Find the correct option text
+  const correctOption =
+    question.options.find(
+      option =>
+        option.charAt(0) === correctAnswer
+    );
+
+  const selectedOption =
+    question.options.find(
+      option =>
+        option.charAt(0) === selectedAnswer
+    );
+
+  let resultText;
+
+  if (isCorrect) {
+
+    resultText =
+
+`✅ <b>CORRECT!</b>
+
+Excellent work! 🔥
+
+You selected:
+<b>${selectedOption}</b>`;
+
+  } else {
+
+    resultText =
+
+`❌ <b>NOT QUITE</b>
+
+You selected:
+<b>${selectedOption}</b>
+
+Correct answer:
+<b>${correctOption}</b>`;
+
+  }
+
+  const explanation =
+
+`🧠 <b>Why?</b>
+
+${question.explanation}`;
+
+  await ctx.editMessageText(
+
+`${resultText}
+
+${explanation}`,
+
+    {
+      parse_mode: 'HTML',
+
+      ...Markup.inlineKeyboard([
+
+        [
+          Markup.button.callback(
+            '➡️ Next Question',
+            'next_question'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '📊 My Results',
+            'practice_results'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '🏠 Main Menu',
+            'home'
+          )
+        ]
+
+      ])
+    }
+
+  );
+
+});
+
+
+// ------------------------------------------------------------
 // NEXT QUESTION
 // ------------------------------------------------------------
 
-bot.action("next_question", async (ctx) => {
+bot.action('next_question', async (ctx) => {
 
-  const user = getUser(ctx.from.id);
+  await ctx.answerCbQuery();
 
-  user.questionIndex++;
+  const state = getUserState(ctx.from.id);
+
+  if (!state.currentSubject) {
+
+    return showHome(ctx);
+
+  }
+
+  state.currentIndex++;
+
+  const total =
+    state.questionOrder
+      ? state.questionOrder.length
+      : 0;
+
+  if (state.currentIndex >= total) {
+
+    return showResults(ctx);
+
+  }
 
   await sendQuestion(ctx);
 
@@ -778,363 +1069,1983 @@ bot.action("next_question", async (ctx) => {
 
 
 // ------------------------------------------------------------
-// RESULTS
+// PRACTICE RESULTS
+// ------------------------------------------------------------
+
+bot.action('practice_results', async (ctx) => {
+
+  await ctx.answerCbQuery();
+
+  await showResults(ctx);
+
+});
+
+
+// ------------------------------------------------------------
+// SHOW RESULTS
 // ------------------------------------------------------------
 
 async function showResults(ctx) {
 
-  const user = getUser(ctx.from.id);
+  const state = getUserState(ctx.from.id);
 
-  const percentage =
-    user.total > 0
-      ? Math.round(
-          (user.score / user.total) * 100
-        )
-      : 0;
+  const attempted =
+    state.attempted || 0;
 
-  let level;
+  const correct =
+    state.correct || 0;
 
-  if (percentage >= 80) {
+  const total =
+    state.questionOrder
+      ? state.questionOrder.length
+      : attempted;
 
-    level =
-      "🔥 Excellent! You're mastering this.";
+  let percentage = 0;
 
-  }
+  if (attempted > 0) {
 
-  else if (percentage >= 60) {
-
-    level =
-      "💪 Good work. A little more practice will make you stronger.";
-
-  }
-
-  else {
-
-    level =
-      "🌱 Keep practicing. Every mistake is part of mastering.";
+    percentage =
+      Math.round(
+        (correct / attempted) * 100
+      );
 
   }
 
-  await editMenu(
+  let performance;
 
-    ctx,
+  if (percentage >= 90) {
 
-    `🏁 <b>PRACTICE COMPLETE</b>\n\n` +
+    performance =
+      '🏆 Outstanding! You really know this.';
 
-    `🎯 Score: <b>${user.score}/${user.total}</b>\n` +
+  } else if (percentage >= 75) {
 
-    `📊 Accuracy: <b>${percentage}%</b>\n\n` +
+    performance =
+      '🔥 Great job! You are building strong mastery.';
 
-    `${level}\n\n` +
+  } else if (percentage >= 50) {
 
-    `Remember:\n` +
+    performance =
+      '💪 Good start! A little more practice will help.';
 
-    `<i>Practice doesn't make perfect.\n` +
-    `Deliberate practice makes progress.</i>`,
+  } else {
 
-    Markup.inlineKeyboard([
-
-      [
-        Markup.button.callback(
-          "🔄 Practice Again",
-          "practice"
-        )
-      ],
-
-      [
-        Markup.button.callback(
-          "📊 My Progress",
-          "progress"
-        )
-      ],
-
-      [
-        Markup.button.callback(
-          "🏠 Main Menu",
-          "home"
-        )
-      ]
-
-    ])
-
-  );
-
-  user.questions = null;
-
-}
-
-
-// ------------------------------------------------------------
-// ANSWER CHECKER
-// ------------------------------------------------------------
-
-bot.on("text", async (ctx) => {
-
-  const user =
-    userState[ctx.from.id];
-
-  // No active practice
-  if (
-    !user ||
-    !user.questions
-  ) {
-
-    await ctx.replyWithHTML(
-
-      `🤔 <b>Let's get back on track.</b>\n\n` +
-
-      `Use the menu below to continue your Grade 12 journey.`,
-
-      mainKeyboard()
-
-    );
-
-    return;
+    performance =
+      '🌱 Don’t give up. Every mistake is a step toward mastery.';
 
   }
 
-  const currentQuestion =
-    user.questions[user.questionIndex];
+  const subject =
+    state.currentSubject
+      ? subjectMap[state.currentSubject]
+      : null;
 
-  if (!currentQuestion) {
+  const subjectName =
+    subject
+      ? `${subject.emoji} ${subject.name}`
+      : 'Practice';
 
-    await showResults(ctx);
+  await ctx.editMessageText(
 
-    return;
+`🎯 <b>PRACTICE COMPLETE</b>
 
-  }
+${subjectName}
 
-  const userAnswer =
-    ctx.message.text
-      .trim()
-      .toLowerCase();
+━━━━━━━━━━━━━━━━
 
-  const correctAnswer =
-    currentQuestion.answer
-      .toLowerCase();
+📚 Questions: <b>${total}</b>
+✍️ Attempted: <b>${attempted}</b>
+✅ Correct: <b>${correct}</b>
+📊 Score: <b>${percentage}%</b>
 
-  const isCorrect =
-    userAnswer.includes(correctAnswer) ||
-    correctAnswer.includes(userAnswer);
+━━━━━━━━━━━━━━━━
 
-  user.answered++;
+${performance}
 
-  // ----------------------------------------------------------
-  // CORRECT
-  // ----------------------------------------------------------
+<i>Keep practicing. Mastery comes from understanding, not memorizing.</i>`,
 
-  if (isCorrect) {
+    {
+      parse_mode: 'HTML',
 
-    user.score++;
-
-    await ctx.replyWithHTML(
-
-      `✅ <b>CORRECT!</b>\n\n` +
-
-      `Excellent work. 🎯\n\n` +
-
-      `🧠 <b>Why?</b>\n` +
-
-      `${currentQuestion.explanation}\n\n` +
-
-      `Score: <b>${user.score}/${user.answered}</b>`,
-
-      Markup.inlineKeyboard([
+      ...Markup.inlineKeyboard([
 
         [
           Markup.button.callback(
-            "➡️ Next Question",
-            "next_question"
-          )
-        ]
-
-      ])
-
-    );
-
-  }
-
-  // ----------------------------------------------------------
-  // WRONG
-  // ----------------------------------------------------------
-
-  else {
-
-    await ctx.replyWithHTML(
-
-      `❌ <b>NOT QUITE</b>\n\n` +
-
-      `The correct answer is:\n` +
-
-      `👉 <b>${currentQuestion.answer}</b>\n\n` +
-
-      `🧠 <b>Explanation</b>\n` +
-
-      `${currentQuestion.explanation}\n\n` +
-
-      `Don't just memorize it — understand <i>why</i>.`,
-
-      Markup.inlineKeyboard([
-
-        [
-          Markup.button.callback(
-            "➡️ Next Question",
-            "next_question"
-          )
-        ]
-
-      ])
-
-    );
-
-  }
-
-});
-// ============================================================
-// PART 3 — DAILY CHALLENGE + BUDDY + PROGRESS + CONTACT
-// ============================================================
-
-
-// ------------------------------------------------------------
-// DAILY CHALLENGE
-// ------------------------------------------------------------
-
-bot.action("daily", async (ctx) => {
-
-  const allQuestions =
-    Object.values(questionBank).flat();
-
-  const today =
-    new Date().getDate();
-
-  const question =
-    allQuestions[
-      today % allQuestions.length
-    ];
-
-  userState[ctx.from.id] = {
-
-    subject: "daily",
-
-    questions: [question],
-
-    questionIndex: 0,
-
-    score: 0,
-
-    answered: 0,
-
-    total: 1
-
-  };
-
-  await editMenu(
-
-    ctx,
-
-    `🎯 <b>DAILY CHALLENGE</b>\n\n` +
-
-    `One question.\n` +
-    `One opportunity to sharpen your mind.\n\n` +
-
-    `🧠 <b>${question.question}</b>\n\n` +
-
-    `<i>Type your answer below.</i>`,
-
-    Markup.inlineKeyboard([
-
-      [
-        Markup.button.callback(
-          "🏠 Main Menu",
-          "home"
-        )
-      ]
-
-    ])
-
-  );
-
-});
-
-
-// ------------------------------------------------------------
-// EXAM TIPS
-// ------------------------------------------------------------
-
-bot.action("tips", async (ctx) => {
-
-  await editMenu(
-
-    ctx,
-
-    `🧠 <b>GRADE 12 EXAM TIPS</b>\n\n` +
-
-    `1️⃣ <b>Understand before memorizing</b>\n` +
-    `Ask yourself: “Can I explain this without looking?”\n\n` +
-
-    `2️⃣ <b>Practice actively</b>\n` +
-    `Don't only reread notes. Solve questions.\n\n` +
-
-    `3️⃣ <b>Review your mistakes</b>\n` +
-    `Your wrong answers are a study map.\n\n` +
-
-    `4️⃣ <b>Use spaced revision</b>\n` +
-    `Return to difficult topics regularly.\n\n` +
-
-    `5️⃣ <b>Practice under pressure</b>\n` +
-    `Sometimes study with a timer to simulate exam conditions.\n\n` +
-
-    `🎯 <b>Mastery = Understanding + Practice + Review</b>`,
-
-    backHomeKeyboard()
-
-  );
-
-});
-
-
-// ------------------------------------------------------------
-// PROGRESS
-// ------------------------------------------------------------
-
-bot.action("progress", async (ctx) => {
-
-  const user =
-    userState[ctx.from.id];
-
-  // No practice yet
-  if (
-    !user ||
-    !user.answered
-  ) {
-
-    await editMenu(
-
-      ctx,
-
-      `📊 <b>MY PROGRESS</b>\n\n` +
-
-      `You haven't completed a practice session yet.\n\n` +
-
-      `Start practicing and FineBot will track your current session.`,
-
-      Markup.inlineKeyboard([
-
-        [
-          Markup.button.callback(
-            "✍️ Start Practice",
-            "practice"
+            '🔄 Practice Again',
+            `practice_${state.currentSubject}`
           )
         ],
 
         [
           Markup.button.callback(
-            "🏠 Main Menu",
-            "home"
+            '📚 Choose Subject',
+            'practice'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '🏠 Main Menu',
+            'home'
           )
         ]
 
       ])
+    }
+
+  );
+
+}
+
+
+// ------------------------------------------------------------
+// PRACTICE MENU
+// ------------------------------------------------------------
+
+bot.action('practice', async (ctx) => {
+
+  await ctx.answerCbQuery();
+
+  await ctx.editMessageText(
+
+`✍️ <b>PRACTICE ARENA</b>
+
+This is where knowledge becomes skill.
+
+Choose a subject and solve exam-style questions.
+
+<b>Which subject are you ready for?</b> 👇`,
+
+    {
+      parse_mode: 'HTML',
+
+      ...Markup.inlineKeyboard([
+
+        [
+          Markup.button.callback(
+            '🧬 Biology',
+            'practice_biology'
+          ),
+
+          Markup.button.callback(
+            '⚗️ Chemistry',
+            'practice_chemistry'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '⚛️ Physics',
+            'practice_physics'
+          ),
+
+          Markup.button.callback(
+            '➗ Mathematics',
+            'practice_mathematics'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '📜 History',
+            'practice_history'
+          ),
+
+          Markup.button.callback(
+            '🌍 Geography',
+            'practice_geography'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '📈 Economics',
+            'practice_economics'
+          ),
+
+          Markup.button.callback(
+            '🇬🇧 English',
+            'practice_english'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '🎲 Mixed Practice',
+            'mixed_practice'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '🏠 Main Menu',
+            'home'
+          )
+        ]
+
+      ])
+    }
+
+  );
+
+});
+
+
+// ------------------------------------------------------------
+// EXIT PRACTICE
+// ------------------------------------------------------------
+
+bot.action('practice_exit', async (ctx) => {
+
+  await ctx.answerCbQuery();
+
+  const state =
+    getUserState(ctx.from.id);
+
+  state.currentSubject = null;
+  state.currentQuestion = null;
+  state.questionOrder = [];
+  state.currentIndex = 0;
+  state.answered = false;
+
+  await ctx.editMessageText(
+
+`✍️ <b>PRACTICE ENDED</b>
+
+No pressure.
+
+Come back whenever you're ready to solve another problem. 💪`,
+
+    {
+      parse_mode: 'HTML',
+
+      ...Markup.inlineKeyboard([
+
+        [
+          Markup.button.callback(
+            '✍️ Practice Again',
+            'practice'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '🏠 Main Menu',
+            'home'
+          )
+        ]
+
+      ])
+    }
+
+  );
+
+});
+// ============================================================
+// PART 3 — MIXED PRACTICE + DAILY CHALLENGE + PROGRESS
+// ============================================================
+
+
+// ------------------------------------------------------------
+// MIXED PRACTICE
+// ------------------------------------------------------------
+
+bot.action('mixed_practice', async (ctx) => {
+
+  await ctx.answerCbQuery();
+
+  const state = getUserState(ctx.from.id);
+
+  // Collect questions from every subject
+  let mixedQuestions = [];
+
+  Object.keys(questions).forEach(subjectId => {
+
+    questions[subjectId].forEach((question, index) => {
+
+      mixedQuestions.push({
+        ...question,
+        subjectId: subjectId,
+        originalIndex: index
+      });
+
+    });
+
+  });
+
+  // Randomize
+  mixedQuestions = shuffle(mixedQuestions);
+
+  // Keep the session manageable
+  mixedQuestions = mixedQuestions.slice(0, 10);
+
+  state.currentSubject = 'mixed';
+
+  state.mixedQuestions = mixedQuestions;
+  state.currentIndex = 0;
+
+  state.score = 0;
+  state.attempted = 0;
+  state.correct = 0;
+
+  state.currentQuestion = null;
+  state.answered = false;
+
+  await sendMixedQuestion(ctx);
+
+});
+
+
+// ------------------------------------------------------------
+// SEND MIXED QUESTION
+// ------------------------------------------------------------
+
+async function sendMixedQuestion(ctx) {
+
+  const state = getUserState(ctx.from.id);
+
+  const mixedQuestions =
+    state.mixedQuestions || [];
+
+  const question =
+    mixedQuestions[state.currentIndex];
+
+  if (!question) {
+
+    return showMixedResults(ctx);
+
+  }
+
+  state.currentQuestion = question;
+  state.answered = false;
+
+  const questionNumber =
+    state.currentIndex + 1;
+
+  const total =
+    mixedQuestions.length;
+
+  const subject =
+    subjectMap[question.subjectId];
+
+  const progressBar =
+    createProgressBar(
+      questionNumber,
+      total
+    );
+
+  const text =
+
+`🎲 <b>MIXED PRACTICE</b>
+
+${progressBar}
+
+<b>Question ${questionNumber}/${total}</b>
+
+${subject ? `${subject.emoji} <b>${subject.name}</b>` : ''}
+
+🧠 <b>${question.topic}</b>
+
+${question.question}
+
+<i>Think carefully before choosing.</i>`;
+
+  const buttons =
+    question.options.map(option => {
+
+      return [
+        Markup.button.callback(
+          option,
+          `mixed_answer_${option.charAt(0)}`
+        )
+      ];
+
+    });
+
+  buttons.push([
+    Markup.button.callback(
+      '🏠 Exit',
+      'practice_exit'
+    )
+  ]);
+
+  await ctx.editMessageText(
+
+    text,
+
+    {
+      parse_mode: 'HTML',
+      ...Markup.inlineKeyboard(buttons)
+    }
+
+  );
+
+}
+
+
+// ------------------------------------------------------------
+// MIXED ANSWER
+// ------------------------------------------------------------
+
+bot.action(/mixed_answer_([A-D])/, async (ctx) => {
+
+  await ctx.answerCbQuery();
+
+  const state =
+    getUserState(ctx.from.id);
+
+  const question =
+    state.currentQuestion;
+
+  if (!question) return;
+
+  if (state.answered) {
+
+    return ctx.answerCbQuery(
+      'You already answered this question.',
+      { show_alert: true }
+    );
+
+  }
+
+  const selected =
+    ctx.match[1];
+
+  const correct =
+    question.answer;
+
+  const isCorrect =
+    selected === correct;
+
+  state.answered = true;
+
+  state.attempted++;
+
+  if (isCorrect) {
+
+    state.correct++;
+    state.score++;
+
+  }
+
+  const selectedOption =
+    question.options.find(
+      option =>
+        option.charAt(0) === selected
+    );
+
+  const correctOption =
+    question.options.find(
+      option =>
+        option.charAt(0) === correct
+    );
+
+  let result;
+
+  if (isCorrect) {
+
+    result =
+
+`✅ <b>CORRECT!</b>
+
+Your answer:
+<b>${selectedOption}</b>
+
+🔥 Keep going!`;
+
+  } else {
+
+    result =
+
+`❌ <b>NOT QUITE</b>
+
+Your answer:
+<b>${selectedOption}</b>
+
+Correct answer:
+<b>${correctOption}</b>`;
+
+  }
+
+  await ctx.editMessageText(
+
+`${result}
+
+━━━━━━━━━━━━━━━━
+
+🧠 <b>Explanation</b>
+
+${question.explanation}`,
+
+    {
+      parse_mode: 'HTML',
+
+      ...Markup.inlineKeyboard([
+
+        [
+          Markup.button.callback(
+            '➡️ Next Question',
+            'mixed_next'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '📊 Results',
+            'mixed_results'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '🏠 Main Menu',
+            'home'
+          )
+        ]
+
+      ])
+    }
+
+  );
+
+});
+
+
+// ------------------------------------------------------------
+// NEXT MIXED QUESTION
+// ------------------------------------------------------------
+
+bot.action('mixed_next', async (ctx) => {
+
+  await ctx.answerCbQuery();
+
+  const state =
+    getUserState(ctx.from.id);
+
+  state.currentIndex++;
+
+  const total =
+    state.mixedQuestions
+      ? state.mixedQuestions.length
+      : 0;
+
+  if (state.currentIndex >= total) {
+
+    return showMixedResults(ctx);
+
+  }
+
+  await sendMixedQuestion(ctx);
+
+});
+
+
+// ------------------------------------------------------------
+// MIXED RESULTS
+// ------------------------------------------------------------
+
+bot.action('mixed_results', async (ctx) => {
+
+  await ctx.answerCbQuery();
+
+  await showMixedResults(ctx);
+
+});
+
+
+async function showMixedResults(ctx) {
+
+  const state =
+    getUserState(ctx.from.id);
+
+  const attempted =
+    state.attempted || 0;
+
+  const correct =
+    state.correct || 0;
+
+  const total =
+    state.mixedQuestions
+      ? state.mixedQuestions.length
+      : attempted;
+
+  const percentage =
+    attempted > 0
+      ? Math.round(
+          (correct / attempted) * 100
+        )
+      : 0;
+
+  let message;
+
+  if (percentage >= 90) {
+
+    message =
+      '🏆 Excellent! Your knowledge is strong across subjects.';
+
+  } else if (percentage >= 75) {
+
+    message =
+      '🔥 Great performance! Keep sharpening your weak areas.';
+
+  } else if (percentage >= 50) {
+
+    message =
+      '💪 You are making progress. More practice will build confidence.';
+
+  } else {
+
+    message =
+      '🌱 This is exactly why practice matters. Learn from every mistake.';
+
+  }
+
+  await ctx.editMessageText(
+
+`🎲 <b>MIXED PRACTICE COMPLETE</b>
+
+━━━━━━━━━━━━━━━━
+
+📝 Questions: <b>${total}</b>
+✅ Correct: <b>${correct}</b>
+❌ Incorrect: <b>${attempted - correct}</b>
+📊 Score: <b>${percentage}%</b>
+
+━━━━━━━━━━━━━━━━
+
+${message}
+
+<i>Don't just count your mistakes.
+Understand them.</i>`,
+
+    {
+      parse_mode: 'HTML',
+
+      ...Markup.inlineKeyboard([
+
+        [
+          Markup.button.callback(
+            '🔄 Try Again',
+            'mixed_practice'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '✍️ Practice',
+            'practice'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '🏠 Main Menu',
+            'home'
+          )
+        ]
+
+      ])
+    }
+
+  );
+
+}
+
+
+// ============================================================
+// DAILY CHALLENGE
+// ============================================================
+
+
+// ------------------------------------------------------------
+// CREATE DETERMINISTIC DAILY QUESTION
+// ------------------------------------------------------------
+
+function getDailyQuestion() {
+
+  const allQuestions = [];
+
+  Object.keys(questions).forEach(subjectId => {
+
+    questions[subjectId].forEach((question, index) => {
+
+      allQuestions.push({
+
+        ...question,
+
+        subjectId,
+        originalIndex: index
+
+      });
+
+    });
+
+  });
+
+  const today =
+    new Date();
+
+  const dateNumber =
+    today.getFullYear() * 10000 +
+    (today.getMonth() + 1) * 100 +
+    today.getDate();
+
+  const index =
+    dateNumber % allQuestions.length;
+
+  return allQuestions[index];
+
+}
+
+
+// ------------------------------------------------------------
+// DAILY CHALLENGE MENU
+// ------------------------------------------------------------
+
+bot.action('challenge', async (ctx) => {
+
+  await ctx.answerCbQuery();
+
+  const daily =
+    getDailyQuestion();
+
+  const subject =
+    subjectMap[daily.subjectId];
+
+  await ctx.editMessageText(
+
+`🎯 <b>DAILY CHALLENGE</b>
+
+One question.
+One chance.
+One opportunity to sharpen your brain. 🧠
+
+━━━━━━━━━━━━━━━━
+
+${subject.emoji} <b>${subject.name}</b>
+
+🧠 ${daily.topic}
+
+Come back tomorrow for a new challenge.`,
+
+    {
+      parse_mode: 'HTML',
+
+      ...Markup.inlineKeyboard([
+
+        [
+          Markup.button.callback(
+            '🔥 Start Challenge',
+            'start_daily'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '🏠 Main Menu',
+            'home'
+          )
+        ]
+
+      ])
+    }
+
+  );
+
+});
+
+
+// ------------------------------------------------------------
+// START DAILY CHALLENGE
+// ------------------------------------------------------------
+
+bot.action('start_daily', async (ctx) => {
+
+  await ctx.answerCbQuery();
+
+  const daily =
+    getDailyQuestion();
+
+  const state =
+    getUserState(ctx.from.id);
+
+  state.dailyQuestion =
+    daily;
+
+  state.dailyAnswered =
+    false;
+
+  const subject =
+    subjectMap[daily.subjectId];
+
+  const buttons =
+    daily.options.map(option => [
+
+      Markup.button.callback(
+        option,
+        `daily_answer_${option.charAt(0)}`
+      )
+
+    ]);
+
+  buttons.push([
+    Markup.button.callback(
+      '🏠 Exit',
+      'home'
+    )
+  ]);
+
+  await ctx.editMessageText(
+
+`🎯 <b>TODAY'S CHALLENGE</b>
+
+${subject.emoji} <b>${subject.name}</b>
+
+🧠 <b>${daily.topic}</b>
+
+━━━━━━━━━━━━━━━━
+
+${daily.question}
+
+━━━━━━━━━━━━━━━━
+
+<i>Trust your reasoning.</i>`,
+
+    {
+      parse_mode: 'HTML',
+      ...Markup.inlineKeyboard(buttons)
+    }
+
+  );
+
+});
+
+
+// ------------------------------------------------------------
+// DAILY ANSWER
+// ------------------------------------------------------------
+
+bot.action(/daily_answer_([A-D])/, async (ctx) => {
+
+  await ctx.answerCbQuery();
+
+  const state =
+    getUserState(ctx.from.id);
+
+  const question =
+    state.dailyQuestion;
+
+  if (!question) {
+
+    return ctx.answerCbQuery(
+      'Daily challenge unavailable.',
+      { show_alert: true }
+    );
+
+  }
+
+  if (state.dailyAnswered) {
+
+    return ctx.answerCbQuery(
+      'You already completed today’s challenge.',
+      { show_alert: true }
+    );
+
+  }
+
+  state.dailyAnswered = true;
+
+  const selected =
+    ctx.match[1];
+
+  const correct =
+    question.answer;
+
+  const isCorrect =
+    selected === correct;
+
+  const subject =
+    subjectMap[question.subjectId];
+
+  const correctOption =
+    question.options.find(
+      option =>
+        option.charAt(0) === correct
+    );
+
+  let result;
+
+  if (isCorrect) {
+
+    result =
+
+`🎉 <b>YOU GOT IT!</b>
+
+🔥 Excellent reasoning.
+
+You selected the correct answer:
+<b>${correctOption}</b>`;
+
+  } else {
+
+    result =
+
+`💡 <b>GOOD ATTEMPT!</b>
+
+The correct answer is:
+<b>${correctOption}</b>`;
+
+  }
+
+  await ctx.editMessageText(
+
+`${result}
+
+━━━━━━━━━━━━━━━━
+
+🧠 <b>Explanation</b>
+
+${question.explanation}
+
+━━━━━━━━━━━━━━━━
+
+📅 <i>Come back tomorrow for another challenge.</i>`,
+
+    {
+      parse_mode: 'HTML',
+
+      ...Markup.inlineKeyboard([
+
+        [
+          Markup.button.callback(
+            '✍️ More Practice',
+            'practice'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '🏠 Main Menu',
+            'home'
+          )
+        ]
+
+      ])
+    }
+
+  );
+
+});
+
+
+// ============================================================
+// PROGRESS SYSTEM
+// ============================================================
+
+
+// ------------------------------------------------------------
+// PROGRESS MENU
+// ------------------------------------------------------------
+
+bot.action('progress', async (ctx) => {
+
+  await ctx.answerCbQuery();
+
+  const state =
+    getUserState(ctx.from.id);
+
+  const attempted =
+    state.attempted || 0;
+
+  const correct =
+    state.correct || 0;
+
+  const accuracy =
+    attempted > 0
+      ? Math.round(
+          (correct / attempted) * 100
+        )
+      : 0;
+
+  const remaining =
+    attempted - correct;
+
+  let level;
+
+  if (accuracy >= 90) {
+
+    level = '🏆 Master';
+
+  } else if (accuracy >= 75) {
+
+    level = '🔥 Advanced';
+
+  } else if (accuracy >= 50) {
+
+    level = '📚 Developing';
+
+  } else {
+
+    level = '🌱 Getting Started';
+
+  }
+
+  await ctx.editMessageText(
+
+`📊 <b>MY PROGRESS</b>
+
+━━━━━━━━━━━━━━━━
+
+🎓 Level
+<b>${level}</b>
+
+✍️ Questions Attempted
+<b>${attempted}</b>
+
+✅ Correct Answers
+<b>${correct}</b>
+
+❌ Incorrect Answers
+<b>${remaining}</b>
+
+🎯 Accuracy
+<b>${accuracy}%</b>
+
+━━━━━━━━━━━━━━━━
+
+${getProgressMessage(accuracy)}`,
+
+    {
+      parse_mode: 'HTML',
+
+      ...Markup.inlineKeyboard([
+
+        [
+          Markup.button.callback(
+            '✍️ Practice',
+            'practice'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '🎯 Daily Challenge',
+            'challenge'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '🏠 Main Menu',
+            'home'
+          )
+        ]
+
+      ])
+    }
+
+  );
+
+});
+
+
+// ------------------------------------------------------------
+// PROGRESS MESSAGE
+// ------------------------------------------------------------
+
+function getProgressMessage(accuracy) {
+
+  if (accuracy === 0) {
+
+    return (
+      '🚀 <b>Your journey starts here.</b>\n\n' +
+      'Solve your first problem and start building your progress.'
+    );
+
+  }
+
+  if (accuracy < 50) {
+
+    return (
+      '🌱 <b>Keep going.</b>\n\n' +
+      'Mistakes are not failures. They show you exactly what to study next.'
+    );
+
+  }
+
+  if (accuracy < 75) {
+
+    return (
+      '💪 <b>You are improving.</b>\n\n' +
+      'Review the questions you missed and try them again.'
+    );
+
+  }
+
+  if (accuracy < 90) {
+
+    return (
+      '🔥 <b>Strong progress.</b>\n\n' +
+      'You are getting closer to exam-ready performance.'
+    );
+
+  }
+
+  return (
+    '🏆 <b>Excellent performance.</b>\n\n' +
+    'Keep challenging yourself with mixed and exam-style questions.'
+  );
+
+}
+
+
+// ============================================================
+// EXAM READINESS
+// ============================================================
+
+bot.action('exam', async (ctx) => {
+
+  await ctx.answerCbQuery();
+
+  await ctx.editMessageText(
+
+`🧠 <b>EXAM READY</b>
+
+Your exam is not won on exam day.
+
+It is won by what you repeatedly practice before it.
+
+━━━━━━━━━━━━━━━━
+
+🎯 <b>1. Understand</b>
+Don't memorize blindly. Understand why the answer works.
+
+✍️ <b>2. Practice</b>
+Solve questions without looking at the answer first.
+
+🔄 <b>3. Review</b>
+Your mistakes are your study map.
+
+⏱️ <b>4. Time Yourself</b>
+Practice solving under realistic time pressure.
+
+🧠 <b>5. Stay Calm</b>
+A clear mind helps you use what you already know.
+
+━━━━━━━━━━━━━━━━
+
+<b>Small progress every day beats panic at the end.</b>`,
+
+    {
+      parse_mode: 'HTML',
+
+      ...Markup.inlineKeyboard([
+
+        [
+          Markup.button.callback(
+            '✍️ Practice Now',
+            'practice'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '🎯 Daily Challenge',
+            'challenge'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '🏠 Main Menu',
+            'home'
+          )
+        ]
+
+      ])
+    }
+
+  );
+
+});
+// ============================================================
+// PART 4 — STUDY BUDDY + SUPPORT + TEXT HANDLER + VERCEL
+// ============================================================
+
+
+// ============================================================
+// STUDY BUDDY
+// ============================================================
+
+bot.action('buddy', async (ctx) => {
+
+  await ctx.answerCbQuery();
+
+  await ctx.editMessageText(
+
+`💬 <b>STUDY BUDDY</b>
+
+You don't have to study through everything alone.
+
+Tell me how you're feeling right now 👇
+
+<i>No judgment. Just support.</i>`,
+
+    {
+      parse_mode: 'HTML',
+
+      ...Markup.inlineKeyboard([
+
+        [
+          Markup.button.callback(
+            '😊 I feel good',
+            'mood_good'
+          ),
+
+          Markup.button.callback(
+            '😌 I feel calm',
+            'mood_calm'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '😰 I feel stressed',
+            'mood_stressed'
+          ),
+
+          Markup.button.callback(
+            '😤 I feel frustrated',
+            'mood_frustrated'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '😔 I feel discouraged',
+            'mood_discouraged'
+          ),
+
+          Markup.button.callback(
+            '😟 I feel anxious',
+            'mood_anxious'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '💬 I just want to talk',
+            'mood_talk'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '🏠 Main Menu',
+            'home'
+          )
+        ]
+
+      ])
+    }
+
+  );
+
+});
+
+
+// ============================================================
+// BUDDY RESPONSES
+// ============================================================
+
+const buddyResponses = {
+
+  mood_good: {
+
+    text:
+`😊 <b>That's great to hear.</b>
+
+Protect that energy.
+
+You don't need to study for hours today. Even one focused session can move you forward.
+
+What do you want to do next?`,
+
+    buttons: [
+      [
+        Markup.button.callback(
+          '✍️ Practice',
+          'practice'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🎯 Daily Challenge',
+          'challenge'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🏠 Main Menu',
+          'home'
+        )
+      ]
+    ]
+
+  },
+
+
+  mood_calm: {
+
+    text:
+`😌 <b>Good.</b>
+
+A calm mind is a powerful study tool.
+
+This is a good moment to solve a few problems while your mind is clear.
+
+Ready?`,
+
+    buttons: [
+      [
+        Markup.button.callback(
+          '✍️ Start Practicing',
+          'practice'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🎯 Challenge Me',
+          'challenge'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '💬 Back to Buddy',
+          'buddy'
+        )
+      ]
+    ]
+
+  },
+
+
+  mood_stressed: {
+
+    text:
+`😰 <b>Take a breath.</b>
+
+You don't have to solve your entire Grade 12 journey tonight.
+
+Let's make the next step small.
+
+Try this:
+
+<b>1.</b> Take a slow breath.
+<b>2.</b> Put your phone distractions away.
+<b>3.</b> Choose ONE subject.
+<b>4.</b> Solve just 3 questions.
+
+Small steps count. 🌱`,
+
+    buttons: [
+      [
+        Markup.button.callback(
+          '✍️ Just 3 Questions',
+          'practice'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🧠 Exam Tips',
+          'exam'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '💬 Talk to Me',
+          'buddy_talk'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🏠 Main Menu',
+          'home'
+        )
+      ]
+    ]
+
+  },
+
+
+  mood_frustrated: {
+
+    text:
+`😤 <b>It's okay to be frustrated.</b>
+
+Sometimes the hardest part isn't the question.
+
+It's seeing a question again and again without understanding it.
+
+Don't just memorize the answer.
+
+Let's break the problem down and understand <b>why</b> the answer works. 🧠`,
+
+    buttons: [
+      [
+        Markup.button.callback(
+          '✍️ Solve a Problem',
+          'practice'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '💬 Talk About It',
+          'buddy_talk'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🏠 Main Menu',
+          'home'
+        )
+      ]
+    ]
+
+  },
+
+
+  mood_discouraged: {
+
+    text:
+`😔 <b>One bad result does not define you.</b>
+
+Getting a question wrong doesn't mean you can't learn it.
+
+It means you've found something that needs another explanation.
+
+Your job isn't to be perfect.
+
+Your job is to keep improving. 🌱`,
+
+    buttons: [
+      [
+        Markup.button.callback(
+          '✍️ Try Again',
+          'practice'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '📊 See My Progress',
+          'progress'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '💬 Talk to Me',
+          'buddy_talk'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🏠 Main Menu',
+          'home'
+        )
+      ]
+    ]
+
+  },
+
+
+  mood_anxious: {
+
+    text:
+`😟 <b>That exam anxiety is real.</b>
+
+But you don't need to know everything at once.
+
+Focus on the next question.
+
+Then the next one.
+
+Then the next.
+
+That's how preparation is built — one problem at a time. 🧠`,
+
+    buttons: [
+      [
+        Markup.button.callback(
+          '✍️ Practice',
+          'practice'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🧠 Exam Ready',
+          'exam'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '💬 Talk to Me',
+          'buddy_talk'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🏠 Main Menu',
+          'home'
+        )
+      ]
+    ]
+
+  },
+
+
+  mood_talk: {
+
+    text:
+`💬 <b>I'm listening.</b>
+
+You can tell me what's bothering you.
+
+For example:
+
+• "I'm scared of failing."
+• "I don't understand physics."
+• "I can't concentrate."
+• "I don't know where to start."
+
+Just send me a message.`,
+
+    buttons: [
+      [
+        Markup.button.callback(
+          '🔙 Back to Buddy',
+          'buddy'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🏠 Main Menu',
+          'home'
+        )
+      ]
+    ]
+
+  }
+
+};
+
+
+// ============================================================
+// MOOD HANDLER
+// ============================================================
+
+bot.action(
+  [
+    'mood_good',
+    'mood_calm',
+    'mood_stressed',
+    'mood_frustrated',
+    'mood_discouraged',
+    'mood_anxious',
+    'mood_talk'
+  ],
+  async (ctx) => {
+
+    await ctx.answerCbQuery();
+
+    const response =
+      buddyResponses[ctx.match[0]];
+
+    if (!response) return;
+
+    await ctx.editMessageText(
+
+      response.text,
+
+      {
+        parse_mode: 'HTML',
+
+        ...Markup.inlineKeyboard(
+          response.buttons
+        )
+      }
+
+    );
+
+  }
+);
+
+
+// ============================================================
+// TALK MODE
+// ============================================================
+
+bot.action('buddy_talk', async (ctx) => {
+
+  await ctx.answerCbQuery();
+
+  const state =
+    getUserState(ctx.from.id);
+
+  state.talkMode = true;
+
+  await ctx.editMessageText(
+
+`💬 <b>TALK TO FINEBOT</b>
+
+I'm listening.
+
+Send me what's on your mind.
+
+You could say:
+
+<i>"I'm scared I'll fail."</i>
+
+<i>"I can't concentrate."</i>
+
+<i>"Physics is confusing me."</i>
+
+<i>"I don't know how to study."</i>
+
+I'll try to help you take the next useful step.
+
+━━━━━━━━━━━━━━━━
+
+<b>Send your message below 👇</b>`,
+
+    {
+      parse_mode: 'HTML',
+
+      ...Markup.inlineKeyboard([
+
+        [
+          Markup.button.callback(
+            '🔙 Back to Buddy',
+            'buddy'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '🏠 Main Menu',
+            'home'
+          )
+        ]
+
+      ])
+    }
+
+  );
+
+});
+
+
+// ============================================================
+// SIMPLE BUDDY MESSAGE ANALYSIS
+// ============================================================
+
+function getBuddyReply(message) {
+
+  const text =
+    message.toLowerCase();
+
+  // Failure / exam fear
+  if (
+    text.includes('fail') ||
+    text.includes('failing') ||
+    text.includes('failed')
+  ) {
+
+    return {
+
+      message:
+`💬 <b>Let's slow that thought down.</b>
+
+Being afraid of failing doesn't mean you will fail.
+
+Instead of thinking about the entire exam, let's focus on something you can control right now:
+
+<b>One topic.
+One problem.
+One improvement.</b>
+
+You don't need to become perfect today.
+
+You just need to move forward.`,
+
+      buttons: [
+        [
+          Markup.button.callback(
+            '✍️ Solve a Problem',
+            'practice'
+          )
+        ],
+        [
+          Markup.button.callback(
+            '🧠 Exam Tips',
+            'exam'
+          )
+        ],
+        [
+          Markup.button.callback(
+            '🏠 Main Menu',
+            'home'
+          )
+        ]
+      ]
+
+    };
+
+  }
+
+
+  // Concentration
+  if (
+    text.includes('concentrate') ||
+    text.includes('focus') ||
+    text.includes('distracted')
+  ) {
+
+    return {
+
+      message:
+`🧠 <b>Let's make studying smaller.</b>
+
+Try a simple focus session:
+
+⏱️ <b>20 minutes</b>
+📚 Choose one topic
+📵 Remove distractions
+✍️ Solve 3–5 problems
+☕ Take a short break
+
+You don't need unlimited motivation.
+
+You need a small starting point.`,
+
+      buttons: [
+        [
+          Markup.button.callback(
+            '✍️ Start Practice',
+            'practice'
+          )
+        ],
+        [
+          Markup.button.callback(
+            '🏠 Main Menu',
+            'home'
+          )
+        ]
+      ]
+
+    };
+
+  }
+
+
+  // Confusion
+  if (
+    text.includes('confus') ||
+    text.includes("don't understand") ||
+    text.includes('do not understand') ||
+    text.includes('understand')
+  ) {
+
+    return {
+
+      message:
+`🧠 <b>Not understanding something is normal.</b>
+
+Don't memorize the answer yet.
+
+First ask:
+
+<b>1.</b> What information do I have?
+<b>2.</b> What am I trying to find?
+<b>3.</b> Which concept or formula connects them?
+<b>4.</b> Can I solve a simpler version?
+
+That's how problem solving becomes easier.`,
+
+      buttons: [
+        [
+          Markup.button.callback(
+            '✍️ Practice',
+            'practice'
+          )
+        ],
+        [
+          Markup.button.callback(
+            '💬 More Support',
+            'buddy'
+          )
+        ]
+      ]
+
+    };
+
+  }
+
+
+  // Generic supportive response
+  return {
+
+    message:
+`💬 <b>I hear you.</b>
+
+Whatever you're dealing with, you don't have to solve everything at once.
+
+Let's focus on the next useful step.
+
+You can practice, review your progress, prepare for exams, or simply keep talking.`,
+
+    buttons: [
+      [
+        Markup.button.callback(
+          '✍️ Practice',
+          'practice'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '📊 My Progress',
+          'progress'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '💬 Keep Talking',
+          'buddy_talk'
+        )
+      ],
+      [
+        Markup.button.callback(
+          '🏠 Main Menu',
+          'home'
+        )
+      ]
+    ]
+
+  };
+
+}
+
+
+// ============================================================
+// CONTACT / SUPPORT
+// ============================================================
+
+bot.action('contact', async (ctx) => {
+
+  await ctx.answerCbQuery();
+
+  await ctx.editMessageText(
+
+`📞 <b>FINEBOT SUPPORT</b>
+
+Need help?
+
+━━━━━━━━━━━━━━━━
+
+🛠️ <b>Technical Problem</b>
+Tell us what went wrong.
+
+💳 <b>Payment Problem</b>
+Send your payment details and we'll help.
+
+📝 <b>Wrong Question</b>
+Tell us which question needs correction.
+
+💡 <b>Content Feedback</b>
+Your feedback helps us improve FineBot.
+
+━━━━━━━━━━━━━━━━
+
+📧 <b>finebot.support@gmail.com</b>
+
+<i>Please don't send your password, OTP, or private payment credentials.</i>`,
+
+    {
+      parse_mode: 'HTML',
+
+      ...Markup.inlineKeyboard([
+
+        [
+          Markup.button.callback(
+            '💬 Study Buddy',
+            'buddy'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '🏠 Main Menu',
+            'home'
+          )
+        ]
+
+      ])
+    }
+
+  );
+
+});
+
+
+// ============================================================
+// TEXT MESSAGE HANDLER
+// ============================================================
+
+bot.on('text', async (ctx) => {
+
+  const message =
+    ctx.message.text.trim();
+
+  const state =
+    getUserState(ctx.from.id);
+
+
+  // ----------------------------------------------------------
+  // BUDDY TALK MODE
+  // ----------------------------------------------------------
+
+  if (state.talkMode) {
+
+    const reply =
+      getBuddyReply(message);
+
+    await ctx.replyWithHTML(
+      reply.message,
+      Markup.inlineKeyboard(
+        reply.buttons
+      )
+    );
+
+    return;
+
+  }
+
+
+  // ----------------------------------------------------------
+  // IF USER SENT TEXT DURING A PRACTICE QUESTION
+  // ----------------------------------------------------------
+
+  if (
+    state.currentQuestion &&
+    !state.answered
+  ) {
+
+    await ctx.replyWithHTML(
+
+`✍️ <b>This question uses answer buttons.</b>
+
+Choose <b>A, B, C, or D</b> from the buttons above.
+
+Take your time and think before answering. 🧠`
 
     );
 
@@ -1143,222 +3054,125 @@ bot.action("progress", async (ctx) => {
   }
 
 
-  const accuracy =
-    Math.round(
-      (user.score / user.answered) * 100
+  // ----------------------------------------------------------
+  // SIMPLE COMMAND-LIKE TEXT
+  // ----------------------------------------------------------
+
+  const lower =
+    message.toLowerCase();
+
+
+  if (
+    lower === 'menu' ||
+    lower === 'home' ||
+    lower === 'start'
+  ) {
+
+    await showHome(ctx);
+
+    return;
+
+  }
+
+
+  if (
+    lower === 'practice' ||
+    lower === 'questions'
+  ) {
+
+    await ctx.replyWithHTML(
+      '✍️ <b>Practice Arena</b>\n\nChoose a subject:',
+      Markup.inlineKeyboard([
+
+        [
+          Markup.button.callback(
+            '🧬 Biology',
+            'practice_biology'
+          ),
+
+          Markup.button.callback(
+            '⚗️ Chemistry',
+            'practice_chemistry'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '⚛️ Physics',
+            'practice_physics'
+          ),
+
+          Markup.button.callback(
+            '➗ Mathematics',
+            'practice_mathematics'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '📜 History',
+            'practice_history'
+          ),
+
+          Markup.button.callback(
+            '🌍 Geography',
+            'practice_geography'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '📈 Economics',
+            'practice_economics'
+          ),
+
+          Markup.button.callback(
+            '🇬🇧 English',
+            'practice_english'
+          )
+        ],
+
+        [
+          Markup.button.callback(
+            '🎲 Mixed Practice',
+            'mixed_practice'
+          )
+        ]
+
+      ])
     );
 
+    return;
 
-  await editMenu(
+  }
 
-    ctx,
 
-    `📊 <b>MY PROGRESS</b>\n\n` +
+  // ----------------------------------------------------------
+  // UNKNOWN TEXT
+  // ----------------------------------------------------------
 
-    `🎯 Questions answered: <b>${user.answered}</b>\n` +
+  await ctx.replyWithHTML(
 
-    `✅ Correct: <b>${user.score}</b>\n` +
+`💬 <b>I'm here to help.</b>
 
-    `📈 Accuracy: <b>${accuracy}%</b>\n\n` +
+Use the buttons below to continue, or send me a message if you want to talk.`,
 
-    `Keep going.\n\n` +
-
-    `<b>Your goal is continuous improvement.</b>`,
-
-    Markup.inlineKeyboard([
-
-      [
-        Markup.button.callback(
-          "✍️ Practice",
-          "practice"
-        )
-      ],
-
-      [
-        Markup.button.callback(
-          "🏠 Main Menu",
-          "home"
-        )
-      ]
-
-    ])
+    mainKeyboard()
 
   );
 
 });
 
 
-// ------------------------------------------------------------
-// STUDY BUDDY RESPONSES
-// ------------------------------------------------------------
+// ============================================================
+// ERROR HANDLING
+// ============================================================
 
-const buddyResponses = {
+bot.catch((error, ctx) => {
 
-  happy:
-    "☀️ That's great! Use that energy to get one more topic done.",
-
-  calm:
-    "🌿 Good. A calm mind learns better. Let's make some progress.",
-
-  stressed:
-    "🫶 Take a slow breath. Don't try to conquer everything at once. Pick one small topic.",
-
-  frustrated:
-    "💪 Frustration often means you're pushing against something difficult. Break it into a smaller problem.",
-
-  sad:
-    "🫶 It's okay to have difficult days. You don't need to be perfect today.",
-
-  tired:
-    "😴 Your brain needs recovery too. Take a short break, then return with one focused task.",
-
-  motivated:
-    "🔥 That's the energy! Turn motivation into action — solve one question right now."
-
-};
-
-
-// ------------------------------------------------------------
-// STUDY BUDDY MENU
-// ------------------------------------------------------------
-
-bot.action("buddy", async (ctx) => {
-
-  await editMenu(
-
-    ctx,
-
-    `💬 <b>STUDY BUDDY</b>\n\n` +
-
-    `How are you feeling right now?\n\n` +
-
-    `<i>No judgment. Just choose honestly.</i>`,
-
-    Markup.inlineKeyboard([
-
-      [
-        Markup.button.callback(
-          "😊 Happy",
-          "mood_happy"
-        ),
-
-        Markup.button.callback(
-          "😌 Calm",
-          "mood_calm"
-        )
-      ],
-
-      [
-        Markup.button.callback(
-          "😩 Stressed",
-          "mood_stressed"
-        ),
-
-        Markup.button.callback(
-          "😤 Frustrated",
-          "mood_frustrated"
-        )
-      ],
-
-      [
-        Markup.button.callback(
-          "😢 Sad",
-          "mood_sad"
-        ),
-
-        Markup.button.callback(
-          "😴 Tired",
-          "mood_tired"
-        )
-      ],
-
-      [
-        Markup.button.callback(
-          "🔥 Motivated",
-          "mood_motivated"
-        )
-      ],
-
-      [
-        Markup.button.callback(
-          "🏠 Main Menu",
-          "home"
-        )
-      ]
-
-    ])
-
-  );
-
-});
-
-
-// ------------------------------------------------------------
-// MOOD RESPONSE
-// ------------------------------------------------------------
-
-bot.action(/^mood_(.+)$/, async (ctx) => {
-
-  const mood =
-    ctx.match[1];
-
-  const response =
-    buddyResponses[mood] ||
-    "I'm here with you. Keep going. 💙";
-
-  await editMenu(
-
-    ctx,
-
-    `💬 <b>STUDY BUDDY</b>\n\n` +
-
-    `${response}\n\n` +
-
-    `What should we do next?`,
-
-    Markup.inlineKeyboard([
-
-      [
-        Markup.button.callback(
-          "✍️ Practice",
-          "practice"
-        )
-      ],
-
-      [
-        Markup.button.callback(
-          "🏠 Main Menu",
-          "home"
-        )
-      ]
-
-    ])
-
-  );
-
-});
-
-
-// ------------------------------------------------------------
-// CONTACT
-// ------------------------------------------------------------
-
-bot.action("contact", async (ctx) => {
-
-  await editMenu(
-
-    ctx,
-
-    `📞 <b>CONTACT FINEBOT</b>\n\n` +
-
-    `Need help, found an error, or have a suggestion?\n\n` +
-
-    `📧 finebot.support@gmail.com\n\n` +
-
-    `<i>We'd love to hear from you.</i>`,
-
-    backHomeKeyboard()
-
+  console.error(
+    'FineBot error:',
+    error
   );
 
 });
@@ -1372,32 +3186,28 @@ module.exports = async (req, res) => {
 
   try {
 
-    if (req.method === "POST") {
+    if (req.method !== 'POST') {
 
-      await bot.handleUpdate(req.body);
+      res.status(200).send('FineBot is running.');
 
-      return res
-        .status(200)
-        .send("OK");
+      return;
 
     }
 
-    return res
-      .status(200)
-      .send("FineBot is running 🚀");
+    await bot.handleUpdate(
+      req.body,
+      res
+    );
 
-  }
-
-  catch (error) {
+  } catch (error) {
 
     console.error(
-      "FineBot Error:",
+      'Webhook error:',
       error
     );
 
-    return res
-      .status(200)
-      .send("OK");
+    // Telegram should still receive a successful response
+    res.status(200).send('OK');
 
   }
 
