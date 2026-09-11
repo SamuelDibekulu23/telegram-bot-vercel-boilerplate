@@ -11,7 +11,7 @@ This template inspired by [Telegram Bot Boilerplate](https://github.com/yakovlev
 First rename `.env-sample` file to `.env` and fill in all necessary values.
 
 ```
-BOT_TOKEN="8933991996:AAEdiFvR5ZNmkuHfTEGxzvDT4lv3HCUE34A"
+BOT_TOKEN=" "
 ```
 
 ## Start your local server
