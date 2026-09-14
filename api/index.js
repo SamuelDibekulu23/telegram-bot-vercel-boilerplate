@@ -1,7 +1,13 @@
-const { Telegraf, Markup } = require("telegraf");
+ const { Telegraf, Markup } = require("telegraf");
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const SECRET_TOKEN = process.env.SECRET_TOKEN;
+
+/*
+|--------------------------------------------------------------------------
+| Security: required environment variables
+|--------------------------------------------------------------------------
+*/
 
 if (!BOT_TOKEN) {
   throw new Error("BOT_TOKEN environment variable is missing.");
@@ -15,51 +21,79 @@ const bot = new Telegraf(BOT_TOKEN);
 
 /*
 |--------------------------------------------------------------------------
-| FineBot — Brick 1
-| Core Telegram/Vercel Foundation
+| FineBot — Friendly Home Experience
 |--------------------------------------------------------------------------
 */
 
-/* -----------------------------------------------------------------------
-   Helpers
------------------------------------------------------------------------- */
-
+/*
+ * Get the student's first name safely.
+ */
 function getStudentName(ctx) {
-  const user = ctx.from;
-
-  if (!user) {
-    return "Student";
+  if (!ctx.from) {
+    return "there";
   }
 
-  return user.first_name || "Student";
+  const name = ctx.from.first_name;
+
+  if (!name || typeof name !== "string") {
+    return "there";
+  }
+
+  return name.trim() || "there";
 }
+
+/*
+|--------------------------------------------------------------------------
+| Home keyboard
+|--------------------------------------------------------------------------
+|
+| Six destinations.
+| Two columns × three rows.
+|--------------------------------------------------------------------------
+*/
 
 function homeKeyboard() {
   return Markup.inlineKeyboard([
     [
-      Markup.button.callback("📚 Practice", "home_practice"),
-      Markup.button.callback("🎯 Daily Challenge", "home_daily"),
+      Markup.button.callback("🧠 Learn & Play", "home_practice"),
+      Markup.button.callback("🎯 Daily Spark", "home_daily"),
     ],
     [
-      Markup.button.callback("📊 My Progress", "home_progress"),
-      Markup.button.callback("📞 Support", "home_support"),
+      Markup.button.callback("📈 My Journey", "home_progress"),
+      Markup.button.callback("🧩 Fix My Weak", "home_weak"),
+    ],
+    [
+      Markup.button.callback("🔥 Keep It Going", "home_streak"),
+      Markup.button.callback("💬 Talk to FineBot", "home_chat"),
     ],
   ]);
 }
+
+/*
+|--------------------------------------------------------------------------
+| Home text
+|--------------------------------------------------------------------------
+*/
 
 function homeText(ctx) {
   const name = getStudentName(ctx);
 
   return (
-    "🌟 FINEBOT\n" +
-    "Grade 12 Mastering Companion\n\n" +
-    `👋 Welcome, ${name}!\n\n` +
-    "🔥 0 day streak\n" +
-    "⭐ 0 XP\n" +
-    "📊 0 questions answered\n\n" +
-    "What do you want to do?"
+    "✨ FINEBOT\n\n" +
+    `Good to have you here, ${name}. 😄\n` +
+    "Ready to make your brain a little stronger today?\n\n" +
+    "🔥 5 day streak   ·   ⭐ 125 XP\n\n" +
+    "A little practice now can make tomorrow's questions\n" +
+    "feel a whole lot easier. 🧠✨\n\n" +
+    "What feels right today?"
   );
 }
+
+/*
+|--------------------------------------------------------------------------
+| Show Home
+|--------------------------------------------------------------------------
+*/
 
 async function showHome(ctx) {
   const text = homeText(ctx);
@@ -71,9 +105,8 @@ async function showHome(ctx) {
       return;
     } catch (error) {
       /*
-       * Telegram can report an error when the message already
-       * contains exactly the same text and keyboard.
-       * We do not need to send another message in that case.
+       * Telegram returns this when the message already has
+       * exactly the same text and keyboard.
        */
       if (
         !error.description ||
@@ -81,60 +114,73 @@ async function showHome(ctx) {
       ) {
         throw error;
       }
-    }
 
-    return;
+      return;
+    }
   }
 
   await ctx.reply(text, keyboard);
 }
 
-/* -----------------------------------------------------------------------
-   /start
------------------------------------------------------------------------- */
+/*
+|--------------------------------------------------------------------------
+| /start
+|--------------------------------------------------------------------------
+*/
 
 bot.start(async (ctx) => {
   await showHome(ctx);
 });
 
-/* -----------------------------------------------------------------------
-   Home → Practice
------------------------------------------------------------------------- */
+/*
+|--------------------------------------------------------------------------
+| Learn & Play
+|--------------------------------------------------------------------------
+*/
 
 bot.action("home_practice", async (ctx) => {
   await ctx.answerCbQuery();
 
   const text =
-    "📚 PRACTICE\n\n" +
-    "Choose your stream:\n\n" +
+    "🧠 LET'S GET INTO IT\n\n" +
+    "Pick the kind of brain workout you're in the mood for.\n\n" +
     "🌿 Natural Science\n" +
     "🌍 Social Science";
 
   const keyboard = Markup.inlineKeyboard([
-    [Markup.button.callback("🌿 Natural Science", "practice_natural")],
-    [Markup.button.callback("🌍 Social Science", "practice_social")],
-    [Markup.button.callback("⬅️ Home", "back_home")],
+    [
+      Markup.button.callback(
+        "🌿 Natural Science",
+        "practice_natural"
+      ),
+    ],
+    [
+      Markup.button.callback(
+        "🌍 Social Science",
+        "practice_social"
+      ),
+    ],
+    [
+      Markup.button.callback("🏠 Back to Home", "back_home"),
+    ],
   ]);
 
   await ctx.editMessageText(text, keyboard);
 });
 
-/* -----------------------------------------------------------------------
-   Practice → Natural Science
------------------------------------------------------------------------- */
+/*
+|--------------------------------------------------------------------------
+| Natural Science
+|--------------------------------------------------------------------------
+*/
 
 bot.action("practice_natural", async (ctx) => {
   await ctx.answerCbQuery();
 
   const text =
     "🌿 NATURAL SCIENCE\n\n" +
-    "Choose a subject:\n\n" +
-    "🧬 Biology\n" +
-    "⚗️ Chemistry\n" +
-    "⚡ Physics\n" +
-    "📐 Mathematics\n" +
-    "🇬🇧 English\n" +
-    "🧠 Scholastic Aptitude";
+    "Where should we start?\n\n" +
+    "Take your pick — we'll go one step at a time. 😌";
 
   const keyboard = Markup.inlineKeyboard([
     [
@@ -143,74 +189,113 @@ bot.action("practice_natural", async (ctx) => {
     ],
     [
       Markup.button.callback("⚡ Physics", "subject_physics"),
-      Markup.button.callback("📐 Mathematics", "subject_math_natural"),
+      Markup.button.callback(
+        "📐 Mathematics",
+        "subject_math_natural"
+      ),
     ],
     [
-      Markup.button.callback("🇬🇧 English", "subject_english_natural"),
-      Markup.button.callback("🧠 Aptitude", "subject_aptitude"),
+      Markup.button.callback(
+        "🇬🇧 English",
+        "subject_english_natural"
+      ),
+      Markup.button.callback(
+        "🧠 Aptitude",
+        "subject_aptitude"
+      ),
     ],
-    [Markup.button.callback("⬅️ Practice", "home_practice")],
-    [Markup.button.callback("🏠 Home", "back_home")],
+    [
+      Markup.button.callback("⬅️ Back", "home_practice"),
+      Markup.button.callback("🏠 Home", "back_home"),
+    ],
   ]);
 
   await ctx.editMessageText(text, keyboard);
 });
 
-/* -----------------------------------------------------------------------
-   Practice → Social Science
------------------------------------------------------------------------- */
+/*
+|--------------------------------------------------------------------------
+| Social Science
+|--------------------------------------------------------------------------
+*/
 
 bot.action("practice_social", async (ctx) => {
   await ctx.answerCbQuery();
 
   const text =
     "🌍 SOCIAL SCIENCE\n\n" +
-    "Choose a subject:\n\n" +
-    "🇬🇧 English\n" +
-    "📐 Mathematics\n" +
-    "🌍 Geography\n" +
-    "💰 Economics\n" +
-    "🏛️ History";
+    "What are we tackling today?\n\n" +
+    "Pick one and let's see what you can do. 😄";
 
   const keyboard = Markup.inlineKeyboard([
     [
-      Markup.button.callback("🇬🇧 English", "subject_english_social"),
-      Markup.button.callback("📐 Mathematics", "subject_math_social"),
+      Markup.button.callback(
+        "🇬🇧 English",
+        "subject_english_social"
+      ),
+      Markup.button.callback(
+        "📐 Mathematics",
+        "subject_math_social"
+      ),
     ],
     [
-      Markup.button.callback("🌍 Geography", "subject_geography"),
-      Markup.button.callback("💰 Economics", "subject_economics"),
+      Markup.button.callback(
+        "🌍 Geography",
+        "subject_geography"
+      ),
+      Markup.button.callback(
+        "💰 Economics",
+        "subject_economics"
+      ),
     ],
-    [Markup.button.callback("🏛️ History", "subject_history")],
-    [Markup.button.callback("⬅️ Practice", "home_practice")],
-    [Markup.button.callback("🏠 Home", "back_home")],
+    [
+      Markup.button.callback("🏛️ History", "subject_history"),
+    ],
+    [
+      Markup.button.callback("⬅️ Back", "home_practice"),
+      Markup.button.callback("🏠 Home", "back_home"),
+    ],
   ]);
 
   await ctx.editMessageText(text, keyboard);
 });
 
-/* -----------------------------------------------------------------------
-   Subject placeholders
-   -----------------------------------------------------------------------
-   Questions are intentionally NOT implemented in Brick 1.
------------------------------------------------------------------------- */
+/*
+|--------------------------------------------------------------------------
+| Subject placeholder
+|--------------------------------------------------------------------------
+|
+| The actual learning engine comes in a later brick.
+|--------------------------------------------------------------------------
+*/
 
 async function subjectComingSoon(ctx, subjectName) {
   await ctx.answerCbQuery();
 
   const text =
-    `📚 ${subjectName.toUpperCase()}\n\n` +
-    "This subject is being prepared for FineBot.\n\n" +
-    "🧱 The learning engine will be added in a later brick.\n\n" +
-    "Your progress will eventually be tracked here.";
+    `📚 ${subjectName}\n\n` +
+    "We're getting this one ready. 🛠️\n\n" +
+    "The real lessons, questions, explanations and progress\n" +
+    "tracking will arrive in the learning engine.\n\n" +
+    "We're building it properly — one piece at a time. 💪";
 
   const keyboard = Markup.inlineKeyboard([
-    [Markup.button.callback("⬅️ Practice", "home_practice")],
-    [Markup.button.callback("🏠 Home", "back_home")],
+    [
+      Markup.button.callback("⬅️ Subjects", "home_practice"),
+    ],
+    [
+      Markup.button.callback("🏠 Home", "back_home"),
+    ],
   ]);
 
   await ctx.editMessageText(text, keyboard);
 }
+
+/*
+|--------------------------------------------------------------------------
+| Subject buttons
+|--------------------------------------------------------------------------
+*/
 
 bot.action("subject_biology", (ctx) =>
   subjectComingSoon(ctx, "Biology")
@@ -256,221 +341,246 @@ bot.action("subject_history", (ctx) =>
   subjectComingSoon(ctx, "History")
 );
 
-/* -----------------------------------------------------------------------
-   Home → Daily Challenge
------------------------------------------------------------------------- */
+/*
+|--------------------------------------------------------------------------
+| Daily Spark
+|--------------------------------------------------------------------------
+*/
 
 bot.action("home_daily", async (ctx) => {
   await ctx.answerCbQuery();
 
   const text =
-    "🎯 DAILY CHALLENGE\n\n" +
-    "Today's challenge is being prepared.\n\n" +
-    "🔥 Build your study habit one day at a time!\n\n" +
-    "⭐ Future reward: +20 XP";
+    "🎯 TODAY'S LITTLE CHALLENGE\n\n" +
+    "Just one focused challenge.\n" +
+    "No need to conquer the whole syllabus tonight. 😄\n\n" +
+    "We're preparing your first Daily Spark now.\n\n" +
+    "⭐ Reward: +20 XP";
 
   const keyboard = Markup.inlineKeyboard([
-    [Markup.button.callback("⬅️ Home", "back_home")],
+    [
+      Markup.button.callback("🏠 Take Me Home", "back_home"),
+    ],
   ]);
 
   await ctx.editMessageText(text, keyboard);
 });
 
-/* -----------------------------------------------------------------------
-   Home → My Progress
------------------------------------------------------------------------- */
+/*
+|--------------------------------------------------------------------------
+| My Journey
+|--------------------------------------------------------------------------
+*/
 
 bot.action("home_progress", async (ctx) => {
   await ctx.answerCbQuery();
 
   const text =
-    "📊 MY PROGRESS\n\n" +
-    "⭐ XP\n" +
-    "0\n\n" +
-    "🔥 Study Streak\n" +
-    "0 days\n\n" +
-    "🎯 Accuracy\n" +
-    "0%\n\n" +
-    "✍️ Questions\n" +
-    "0 answered\n\n" +
-    "Start practicing to build your progress!";
+    "📈 YOUR JOURNEY\n\n" +
+    "You're just getting started here. 🌱\n\n" +
+    "⭐ 125 XP\n" +
+    "🔥 5 day streak\n" +
+    "🎯 0 questions completed\n" +
+    "📊 Accuracy will appear here once you start practicing.\n\n" +
+    "Every question you answer will gradually build this page.";
 
   const keyboard = Markup.inlineKeyboard([
-    [Markup.button.callback("📚 Practice", "home_practice")],
-    [Markup.button.callback("⬅️ Home", "back_home")],
+    [
+      Markup.button.callback("🧠 Learn & Play", "home_practice"),
+    ],
+    [
+      Markup.button.callback("🏠 Home", "back_home"),
+    ],
   ]);
 
   await ctx.editMessageText(text, keyboard);
 });
 
-/* -----------------------------------------------------------------------
-   Home → Support
------------------------------------------------------------------------- */
+/*
+|--------------------------------------------------------------------------
+| Fix My Weak
+|--------------------------------------------------------------------------
+*/
 
-bot.action("home_support", async (ctx) => {
+bot.action("home_weak", async (ctx) => {
   await ctx.answerCbQuery();
 
   const text =
-    "📞 SUPPORT\n\n" +
-    "We're here to help.\n\n" +
-    "Choose an option:";
+    "🧩 LET'S FIX THE TRICKY PART\n\n" +
+    "Not sure what you're weakest at yet?\n" +
+    "That's okay — FineBot will figure it out as you practice.\n\n" +
+    "We'll watch where you struggle,\n" +
+    "then help you turn those tricky bits into strengths. 💪";
 
   const keyboard = Markup.inlineKeyboard([
-    [Markup.button.callback("❓ How FineBot Works", "support_how")],
-    [Markup.button.callback("🐛 Report a Problem", "support_problem")],
-    [Markup.button.callback("💬 Contact Support", "support_contact")],
-    [Markup.button.callback("⬅️ Home", "back_home")],
+    [
+      Markup.button.callback("🧠 Start Practicing", "home_practice"),
+    ],
+    [
+      Markup.button.callback("🏠 Home", "back_home"),
+    ],
   ]);
 
   await ctx.editMessageText(text, keyboard);
 });
 
-/* -----------------------------------------------------------------------
-   Support screens
------------------------------------------------------------------------- */
+/*
+|--------------------------------------------------------------------------
+| Keep It Going
+|--------------------------------------------------------------------------
+*/
 
-bot.action("support_how", async (ctx) => {
+bot.action("home_streak", async (ctx) => {
   await ctx.answerCbQuery();
 
   const text =
-    "❓ HOW FINEBOT WORKS\n\n" +
-    "FineBot is a Grade 12 mastering companion designed to help you:\n\n" +
-    "📚 Learn important concepts\n" +
-    "✍️ Practice exam-focused questions\n" +
-    "📊 Track your progress\n" +
-    "🔥 Build consistent study habits\n\n" +
-    "More learning features will be added step by step.";
+    "🔥 KEEP THE STREAK ALIVE\n\n" +
+    "Five minutes of focused practice still counts.\n\n" +
+    "The goal isn't to study perfectly every day.\n" +
+    "It's simply to keep showing up. ❤️\n\n" +
+    "Your current streak: 5 days";
 
   const keyboard = Markup.inlineKeyboard([
-    [Markup.button.callback("⬅️ Support", "home_support")],
-    [Markup.button.callback("🏠 Home", "back_home")],
+    [
+      Markup.button.callback("🧠 Give Me a Question", "home_practice"),
+    ],
+    [
+      Markup.button.callback("🏠 Home", "back_home"),
+    ],
   ]);
 
   await ctx.editMessageText(text, keyboard);
 });
 
-bot.action("support_problem", async (ctx) => {
+/*
+|--------------------------------------------------------------------------
+| Talk to FineBot
+|--------------------------------------------------------------------------
+*/
+
+bot.action("home_chat", async (ctx) => {
   await ctx.answerCbQuery();
 
   const text =
-    "🐛 REPORT A PROBLEM\n\n" +
-    "If something isn't working correctly, please describe the problem " +
-    "and send it to the FineBot support team.";
+    "💬 I'M HERE\n\n" +
+    "Got a question?\n" +
+    "Something confusing you?\n" +
+    "Or just need a little push to keep studying?\n\n" +
+    "FineBot's got you. 😄\n\n" +
+    "The conversation features will be connected here as we build them.";
 
   const keyboard = Markup.inlineKeyboard([
-    [Markup.button.callback("⬅️ Support", "home_support")],
-    [Markup.button.callback("🏠 Home", "back_home")],
+    [
+      Markup.button.callback("🏠 Back Home", "back_home"),
+    ],
   ]);
 
   await ctx.editMessageText(text, keyboard);
 });
 
-bot.action("support_contact", async (ctx) => {
-  await ctx.answerCbQuery();
-
-  const text =
-    "💬 CONTACT SUPPORT\n\n" +
-    "Support contact details will be connected here when the support " +
-    "system is implemented.";
-
-  const keyboard = Markup.inlineKeyboard([
-    [Markup.button.callback("⬅️ Support", "home_support")],
-    [Markup.button.callback("🏠 Home", "back_home")],
-  ]);
-
-  await ctx.editMessageText(text, keyboard);
-});
-
-/* -----------------------------------------------------------------------
-   Back → Home
------------------------------------------------------------------------- */
+/*
+|--------------------------------------------------------------------------
+| Back to Home
+|--------------------------------------------------------------------------
+*/
 
 bot.action("back_home", async (ctx) => {
   await ctx.answerCbQuery();
   await showHome(ctx);
 });
 
-/* -----------------------------------------------------------------------
-   Unknown callback protection
------------------------------------------------------------------------- */
+/*
+|--------------------------------------------------------------------------
+| Unknown callback protection
+|--------------------------------------------------------------------------
+*/
 
 bot.on("callback_query", async (ctx) => {
   try {
-    await ctx.answerCbQuery("This option is not available yet.");
+    await ctx.answerCbQuery(
+      "That little button hasn't learned its trick yet. 😄"
+    );
   } catch (error) {
     console.error("Callback error:", error.message);
   }
 });
 
-/* -----------------------------------------------------------------------
-   Error handling
------------------------------------------------------------------------- */
+/*
+|--------------------------------------------------------------------------
+| Global Telegraf error handling
+|--------------------------------------------------------------------------
+*/
 
 bot.catch((error, ctx) => {
-  console.error("FineBot error:", error.message);
+  console.error(
+    "FineBot error:",
+    error && error.message ? error.message : "Unknown error"
+  );
 
-  if (ctx.callbackQuery) {
+  if (ctx && ctx.callbackQuery) {
     ctx
-      .answerCbQuery("⚠️ Something went wrong. Please try again.")
+      .answerCbQuery("Something went a little sideways. Try again. 😅")
       .catch(() => {});
   }
 });
 
- /* -----------------------------------------------------------------------
-   Vercel webhook handler
------------------------------------------------------------------------- */
+/*
+|--------------------------------------------------------------------------
+| Vercel webhook handler
+|--------------------------------------------------------------------------
+*/
 
 module.exports = async (req, res) => {
   /*
-   * Simple health check.
+   * Health check.
    */
   if (req.method === "GET") {
     return res.status(200).send("FineBot is running.");
   }
 
   /*
-   * Only Telegram POST updates are accepted.
+   * Telegram updates must arrive through POST.
    */
   if (req.method !== "POST") {
     return res.status(405).send("Method Not Allowed");
   }
 
   /*
-   * Verify Telegram's webhook secret.
+   * Verify Telegram's secret webhook header.
    */
   const receivedSecret =
     req.headers["x-telegram-bot-api-secret-token"];
 
-  if (!receivedSecret || receivedSecret !== SECRET_TOKEN) {
+  if (
+    !receivedSecret ||
+    receivedSecret !== SECRET_TOKEN
+  ) {
     return res.status(401).send("Unauthorized");
   }
 
   /*
-   * Vercel provides the Telegram update in req.body.
+   * Make sure an update was received.
    */
   if (!req.body) {
-    console.error("Webhook received without a request body.");
+    console.error("Webhook received without request body.");
     return res.status(400).send("Missing request body");
   }
 
   /*
-   * Pass the update directly to Telegraf.
+   * Give the Telegram update to Telegraf.
    */
   try {
-    await bot.handleUpdate(req.body, res);
+    await bot.handleUpdate(req.body);
 
-    /*
-     * Telegraf may already have completed the response.
-     * Only send OK if Vercel still needs a response.
-     */
-    if (!res.headersSent) {
-      return res.status(200).send("OK");
-    }
+    return res.status(200).send("OK");
   } catch (error) {
-    console.error("FineBot webhook error:", error);
+    console.error(
+      "FineBot webhook error:",
+      error && error.message
+        ? error.message
+        : "Unknown error"
+    );
 
-    if (!res.headersSent) {
-      return res.status(500).send("Internal Server Error");
-    }
+    return res.status(500).send("Internal Server Error");
   }
 };
