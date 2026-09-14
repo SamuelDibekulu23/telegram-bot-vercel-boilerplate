@@ -416,15 +416,10 @@ bot.catch((error, ctx) => {
   }
 });
 
-/* -----------------------------------------------------------------------
+ /* -----------------------------------------------------------------------
    Vercel webhook handler
 ------------------------------------------------------------------------ */
 
-const webhookHandler = bot.webhookCallback("/api/index");
-
-/*
- * Vercel calls this function for incoming HTTP requests.
- */
 module.exports = async (req, res) => {
   /*
    * Simple health check.
@@ -451,7 +446,31 @@ module.exports = async (req, res) => {
   }
 
   /*
-   * Pass the Telegram update to Telegraf.
+   * Vercel provides the Telegram update in req.body.
    */
-  return webhookHandler(req, res);
+  if (!req.body) {
+    console.error("Webhook received without a request body.");
+    return res.status(400).send("Missing request body");
+  }
+
+  /*
+   * Pass the update directly to Telegraf.
+   */
+  try {
+    await bot.handleUpdate(req.body, res);
+
+    /*
+     * Telegraf may already have completed the response.
+     * Only send OK if Vercel still needs a response.
+     */
+    if (!res.headersSent) {
+      return res.status(200).send("OK");
+    }
+  } catch (error) {
+    console.error("FineBot webhook error:", error);
+
+    if (!res.headersSent) {
+      return res.status(500).send("Internal Server Error");
+    }
+  }
 };
