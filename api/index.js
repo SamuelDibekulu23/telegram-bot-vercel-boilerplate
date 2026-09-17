@@ -1,13 +1,7 @@
-const { Telegraf, Markup } = require("telegraf");
+ const { Telegraf, Markup } = require("telegraf");
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const SECRET_TOKEN = process.env.SECRET_TOKEN;
-
-/*
-|--------------------------------------------------------------------------
-| Security: required environment variables
-|--------------------------------------------------------------------------
-*/
 
 if (!BOT_TOKEN) {
   throw new Error("BOT_TOKEN environment variable is missing.");
@@ -21,39 +15,90 @@ const bot = new Telegraf(BOT_TOKEN);
 
 /*
 |--------------------------------------------------------------------------
-| FineBot — Part 1: Welcome Screen
+| TEMPORARY STUDENT DATA
 |--------------------------------------------------------------------------
+|
+| This is only for the current development brick.
+| Later, this will be replaced by a real database so progress survives
+| redeployments and server restarts.
+|
 */
 
-/*
- * Get the student's first name safely.
- */
-function getStudentName(ctx) {
-  if (!ctx.from) {
-    return "there";
+const students = new Map();
+
+function getStudent(ctx) {
+  if (!ctx.from) return null;
+
+  const telegramId = ctx.from.id;
+
+  if (!students.has(telegramId)) {
+    students.set(telegramId, {
+      telegramId,
+      firstName: ctx.from.first_name || "Student",
+      username: ctx.from.username || null,
+
+      xp: 0,
+      streak: 0,
+
+      questionsAnswered: 0,
+      correctAnswers: 0,
+
+      lessonsCompleted: 0,
+
+      achievements: [],
+
+      createdAt: new Date().toISOString(),
+    });
   }
 
-  const name = ctx.from.first_name;
+  const student = students.get(telegramId);
 
-  if (!name || typeof name !== "string") {
-    return "there";
-  }
+  /*
+   * Keep Telegram profile information current.
+   */
+  student.firstName = ctx.from.first_name || student.firstName || "Student";
+  student.username = ctx.from.username || student.username || null;
 
-  return name.trim() || "there";
+  return student;
 }
 
 /*
 |--------------------------------------------------------------------------
-| Main Home Keyboard
+| HELPERS
 |--------------------------------------------------------------------------
-|
-| Five simple destinations.
-|
-| 📚 Learn
-| ✍️ Practice
-| 📊 My Journey → Fix My Weak
-| 💬 Study Buddy → Fun Stories
-| 🆘 Support
+*/
+
+function getStudentName(ctx) {
+  const student = getStudent(ctx);
+
+  if (!student || !student.firstName) {
+    return "there";
+  }
+
+  return student.firstName.trim() || "there";
+}
+
+function getUsernameText(student) {
+  if (!student || !student.username) {
+    return "No username";
+  }
+
+  return `@${student.username}`;
+}
+
+function getAccuracy(student) {
+  if (!student || student.questionsAnswered === 0) {
+    return 0;
+  }
+
+  return Math.round(
+    (student.correctAnswers / student.questionsAnswered) * 100
+  );
+}
+
+/*
+|--------------------------------------------------------------------------
+| HOME
 |--------------------------------------------------------------------------
 */
 
@@ -73,29 +118,22 @@ function homeKeyboard() {
   ]);
 }
 
-/*
-|--------------------------------------------------------------------------
-| Home Text
-|--------------------------------------------------------------------------
-*/
-
 function homeText(ctx) {
+  const student = getStudent(ctx);
   const name = getStudentName(ctx);
+
+  const username = getUsernameText(student);
 
   return (
     "🌟 FINEBOT\n" +
-    "Ethiopian Grade 12 Mastering Companion\n\n" +
+    "Grade 12 Mastering Companion\n\n" +
     `👋 Good to have you here, ${name}!\n\n` +
     "Ready to make your brain a little stronger today?\n\n" +
-    "🔥 5 day streak   ·   ⭐ 125 XP"
+    `🔥 ${student.streak} day streak   ·   ⭐ ${student.xp} XP\n` +
+    `📚 ${student.questionsAnswered} questions   ·   🎯 ${getAccuracy(student)}% accuracy\n\n` +
+    `${username}`
   );
 }
-
-/*
-|--------------------------------------------------------------------------
-| Show Home
-|--------------------------------------------------------------------------
-*/
 
 async function showHome(ctx) {
   const text = homeText(ctx);
@@ -122,21 +160,33 @@ async function showHome(ctx) {
 
 /*
 |--------------------------------------------------------------------------
-| /start
+| START
 |--------------------------------------------------------------------------
 */
 
 bot.start(async (ctx) => {
+  const student = getStudent(ctx);
+
+  /*
+   * For now we simply show the real profile.
+   * Later the database will allow FineBot to distinguish:
+   * - first visit
+   * - returning student
+   * - same-day return
+   * - long absence
+   * - streak milestones
+   */
+
+  console.log(
+    `Student opened FineBot: ${student.firstName} (${student.telegramId})`
+  );
+
   await showHome(ctx);
 });
 
 /*
 |--------------------------------------------------------------------------
-| 📚 LEARN
-|--------------------------------------------------------------------------
-|
-| This is only the Part 1 navigation for now.
-| The real Learn & Play engine comes in a later brick.
+| LEARN
 |--------------------------------------------------------------------------
 */
 
@@ -151,9 +201,7 @@ bot.action("home_learn", async (ctx) => {
     "concepts, real-world analogies, notes and practice.";
 
   const keyboard = Markup.inlineKeyboard([
-    [
-      Markup.button.callback("🏠 Home", "back_home"),
-    ],
+    [Markup.button.callback("🏠 Home", "back_home")],
   ]);
 
   await ctx.editMessageText(text, keyboard);
@@ -161,10 +209,7 @@ bot.action("home_learn", async (ctx) => {
 
 /*
 |--------------------------------------------------------------------------
-| ✍️ PRACTICE
-|--------------------------------------------------------------------------
-|
-| The real question engine comes in a later brick.
+| PRACTICE
 |--------------------------------------------------------------------------
 */
 
@@ -179,9 +224,7 @@ bot.action("home_practice", async (ctx) => {
     "We're building it properly, one piece at a time. 💪";
 
   const keyboard = Markup.inlineKeyboard([
-    [
-      Markup.button.callback("🏠 Home", "back_home"),
-    ],
+    [Markup.button.callback("🏠 Home", "back_home")],
   ]);
 
   await ctx.editMessageText(text, keyboard);
@@ -189,36 +232,33 @@ bot.action("home_practice", async (ctx) => {
 
 /*
 |--------------------------------------------------------------------------
-| 📊 MY JOURNEY
-|--------------------------------------------------------------------------
-|
-| Personal progress lives here.
-| Fix My Weak is intentionally inside this area.
+| MY JOURNEY
 |--------------------------------------------------------------------------
 */
 
 bot.action("home_journey", async (ctx) => {
   await ctx.answerCbQuery();
 
+  const student = getStudent(ctx);
+  const name = getStudentName(ctx);
+
   const text =
     "📊 MY JOURNEY\n\n" +
-    "This is your personal record of progress.\n\n" +
-    "⭐ XP\n" +
-    "🔥 Streak\n" +
-    "✅ Correct answers\n" +
-    "🎯 Accuracy\n" +
-    "📚 Lessons completed\n" +
-    "🏅 Achievements\n\n" +
+    `${name}'s personal progress\n\n` +
+    `👤 ${getUsernameText(student)}\n\n` +
+    `⭐ XP: ${student.xp}\n` +
+    `🔥 Streak: ${student.streak} days\n` +
+    `✅ Correct answers: ${student.correctAnswers}\n` +
+    `🎯 Accuracy: ${getAccuracy(student)}%\n` +
+    `📚 Lessons completed: ${student.lessonsCompleted}\n\n` +
+    "🏅 Achievements: " +
+    `${student.achievements.length}\n\n` +
     "And when something keeps giving you trouble...\n" +
     "🩹 Fix My Weak will help you work through it.";
 
   const keyboard = Markup.inlineKeyboard([
-    [
-      Markup.button.callback("🩹 Fix My Weak", "journey_weak"),
-    ],
-    [
-      Markup.button.callback("🏠 Home", "back_home"),
-    ],
+    [Markup.button.callback("🩹 Fix My Weak", "journey_weak")],
+    [Markup.button.callback("🏠 Home", "back_home")],
   ]);
 
   await ctx.editMessageText(text, keyboard);
@@ -226,7 +266,7 @@ bot.action("home_journey", async (ctx) => {
 
 /*
 |--------------------------------------------------------------------------
-| 🩹 FIX MY WEAK
+| FIX MY WEAK
 |--------------------------------------------------------------------------
 */
 
@@ -243,12 +283,8 @@ bot.action("journey_weak", async (ctx) => {
     "The weakness engine will be connected in a later brick.";
 
   const keyboard = Markup.inlineKeyboard([
-    [
-      Markup.button.callback("📊 My Journey", "home_journey"),
-    ],
-    [
-      Markup.button.callback("🏠 Home", "back_home"),
-    ],
+    [Markup.button.callback("📊 My Journey", "home_journey")],
+    [Markup.button.callback("🏠 Home", "back_home")],
   ]);
 
   await ctx.editMessageText(text, keyboard);
@@ -256,10 +292,7 @@ bot.action("journey_weak", async (ctx) => {
 
 /*
 |--------------------------------------------------------------------------
-| 💬 STUDY BUDDY
-|--------------------------------------------------------------------------
-|
-| Fun Stories intentionally lives inside this area.
+| STUDY BUDDY
 |--------------------------------------------------------------------------
 */
 
@@ -278,12 +311,8 @@ bot.action("home_buddy", async (ctx) => {
     "📖 Fun Stories will be right here.";
 
   const keyboard = Markup.inlineKeyboard([
-    [
-      Markup.button.callback("📖 Fun Stories", "buddy_stories"),
-    ],
-    [
-      Markup.button.callback("🏠 Home", "back_home"),
-    ],
+    [Markup.button.callback("📖 Fun Stories", "buddy_stories")],
+    [Markup.button.callback("🏠 Home", "back_home")],
   ]);
 
   await ctx.editMessageText(text, keyboard);
@@ -291,7 +320,7 @@ bot.action("home_buddy", async (ctx) => {
 
 /*
 |--------------------------------------------------------------------------
-| 📖 FUN STORIES
+| FUN STORIES
 |--------------------------------------------------------------------------
 */
 
@@ -306,12 +335,8 @@ bot.action("buddy_stories", async (ctx) => {
     "The story system will be connected in a later brick.";
 
   const keyboard = Markup.inlineKeyboard([
-    [
-      Markup.button.callback("💬 Study Buddy", "home_buddy"),
-    ],
-    [
-      Markup.button.callback("🏠 Home", "back_home"),
-    ],
+    [Markup.button.callback("💬 Study Buddy", "home_buddy")],
+    [Markup.button.callback("🏠 Home", "back_home")],
   ]);
 
   await ctx.editMessageText(text, keyboard);
@@ -319,7 +344,7 @@ bot.action("buddy_stories", async (ctx) => {
 
 /*
 |--------------------------------------------------------------------------
-| 🆘 SUPPORT
+| SUPPORT
 |--------------------------------------------------------------------------
 */
 
@@ -337,18 +362,9 @@ bot.action("home_support", async (ctx) => {
     "📧 finebot.support@gmail.com";
 
   const keyboard = Markup.inlineKeyboard([
-    [
-      Markup.button.callback(
-        "📖 How to Use FineBot",
-        "support_how"
-      ),
-    ],
-    [
-      Markup.button.callback("❓ FAQ", "support_faq"),
-    ],
-    [
-      Markup.button.callback("🏠 Home", "back_home"),
-    ],
+    [Markup.button.callback("📖 How to Use FineBot", "support_how")],
+    [Markup.button.callback("❓ FAQ", "support_faq")],
+    [Markup.button.callback("🏠 Home", "back_home")],
   ]);
 
   await ctx.editMessageText(text, keyboard);
@@ -356,7 +372,7 @@ bot.action("home_support", async (ctx) => {
 
 /*
 |--------------------------------------------------------------------------
-| Support — How to Use
+| SUPPORT — HOW TO USE
 |--------------------------------------------------------------------------
 */
 
@@ -373,12 +389,8 @@ bot.action("support_how", async (ctx) => {
     "More features will become available as we build FineBot.";
 
   const keyboard = Markup.inlineKeyboard([
-    [
-      Markup.button.callback("⬅️ Support", "home_support"),
-    ],
-    [
-      Markup.button.callback("🏠 Home", "back_home"),
-    ],
+    [Markup.button.callback("⬅️ Support", "home_support")],
+    [Markup.button.callback("🏠 Home", "back_home")],
   ]);
 
   await ctx.editMessageText(text, keyboard);
@@ -386,7 +398,7 @@ bot.action("support_how", async (ctx) => {
 
 /*
 |--------------------------------------------------------------------------
-| Support — FAQ
+| SUPPORT — FAQ
 |--------------------------------------------------------------------------
 */
 
@@ -403,12 +415,8 @@ bot.action("support_faq", async (ctx) => {
     "📧 finebot.support@gmail.com";
 
   const keyboard = Markup.inlineKeyboard([
-    [
-      Markup.button.callback("⬅️ Support", "home_support"),
-    ],
-    [
-      Markup.button.callback("🏠 Home", "back_home"),
-    ],
+    [Markup.button.callback("⬅️ Support", "home_support")],
+    [Markup.button.callback("🏠 Home", "back_home")],
   ]);
 
   await ctx.editMessageText(text, keyboard);
@@ -416,7 +424,7 @@ bot.action("support_faq", async (ctx) => {
 
 /*
 |--------------------------------------------------------------------------
-| Back to Home
+| BACK HOME
 |--------------------------------------------------------------------------
 */
 
@@ -427,7 +435,7 @@ bot.action("back_home", async (ctx) => {
 
 /*
 |--------------------------------------------------------------------------
-| Unknown callback protection
+| UNKNOWN CALLBACKS
 |--------------------------------------------------------------------------
 */
 
@@ -443,7 +451,7 @@ bot.on("callback_query", async (ctx) => {
 
 /*
 |--------------------------------------------------------------------------
-| Global Telegraf error handling
+| GLOBAL BOT ERROR HANDLER
 |--------------------------------------------------------------------------
 */
 
@@ -462,49 +470,31 @@ bot.catch((error, ctx) => {
 
 /*
 |--------------------------------------------------------------------------
-| Vercel webhook handler
+| VERCEL WEBHOOK
 |--------------------------------------------------------------------------
 */
 
 module.exports = async (req, res) => {
-  /*
-   * Health check.
-   */
   if (req.method === "GET") {
     return res.status(200).send("FineBot is running.");
   }
 
-  /*
-   * Telegram updates must arrive through POST.
-   */
   if (req.method !== "POST") {
     return res.status(405).send("Method Not Allowed");
   }
 
-  /*
-   * Verify Telegram's secret webhook header.
-   */
   const receivedSecret =
     req.headers["x-telegram-bot-api-secret-token"];
 
-  if (
-    !receivedSecret ||
-    receivedSecret !== SECRET_TOKEN
-  ) {
+  if (!receivedSecret || receivedSecret !== SECRET_TOKEN) {
     return res.status(401).send("Unauthorized");
   }
 
-  /*
-   * Make sure an update was received.
-   */
   if (!req.body) {
     console.error("Webhook received without request body.");
     return res.status(400).send("Missing request body");
   }
 
-  /*
-   * Give the Telegram update to Telegraf.
-   */
   try {
     await bot.handleUpdate(req.body);
 
@@ -512,9 +502,7 @@ module.exports = async (req, res) => {
   } catch (error) {
     console.error(
       "FineBot webhook error:",
-      error && error.message
-        ? error.message
-        : "Unknown error"
+      error && error.message ? error.message : "Unknown error"
     );
 
     return res.status(500).send("Internal Server Error");
