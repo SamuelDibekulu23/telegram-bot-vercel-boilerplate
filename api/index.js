@@ -1,4 +1,3 @@
-cat > api/index.js <<'EOF'
 const { Telegraf, Markup } = require("telegraf");
 const { createClient } = require("@supabase/supabase-js");
 
@@ -8,16 +7,11 @@ const {
 } = require("../src/learning/learn");
 
 const {
-  getEnglishLessonsByCategory
-} = require("../src/learning/catalog");
-
-const {
-  getSnapshot
-} = require("../src/learning/session");
-
-const {
-  advanceLesson
-} = require("../src/learning/flow");
+  getCurrentSection,
+  completeCurrentSection,
+  getProgress,
+  isLessonFinished
+} = require("../src/learning/engine");
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const SECRET_TOKEN = process.env.SECRET_TOKEN;
@@ -26,27 +20,19 @@ const SUPABASE_SECRET_KEY =
   process.env.SUPABASE_SECRET_KEY;
 
 if (!BOT_TOKEN) {
-  throw new Error(
-    "BOT_TOKEN environment variable is missing."
-  );
+  throw new Error("BOT_TOKEN is missing.");
 }
 
 if (!SECRET_TOKEN) {
-  throw new Error(
-    "SECRET_TOKEN environment variable is missing."
-  );
+  throw new Error("SECRET_TOKEN is missing.");
 }
 
 if (!SUPABASE_URL) {
-  throw new Error(
-    "SUPABASE_URL environment variable is missing."
-  );
+  throw new Error("SUPABASE_URL is missing.");
 }
 
 if (!SUPABASE_SECRET_KEY) {
-  throw new Error(
-    "SUPABASE_SECRET_KEY environment variable is missing."
-  );
+  throw new Error("SUPABASE_SECRET_KEY is missing.");
 }
 
 const bot = new Telegraf(BOT_TOKEN);
@@ -65,644 +51,344 @@ const supabase = createClient(
 const students = new Map();
 const learningSessions = new Map();
 
-const questions = [
+const FIRST_ENGLISH_LESSON =
+  "eng-passage-main-idea";
+
+const QUESTIONS = [
   {
     id: "chemistry-001",
-    stream: "Natural",
+    track: "Natural",
     subject: "Chemistry",
-    emoji: "🧪",
     question:
-      "Which particle has a negative charge?",
+      "Which subatomic particle has a negative charge?",
     options: [
-      "A) Proton",
-      "B) Neutron",
-      "C) Electron",
-      "D) Nucleus"
+      "A. Proton",
+      "B. Neutron",
+      "C. Electron",
+      "D. Nucleus"
     ],
-    correctAnswer: "C",
+    correct: "C",
     explanation:
-      "An electron has a negative electric charge. Protons are positive, while neutrons have no electric charge."
+      "An electron carries a negative electric charge."
   },
   {
     id: "biology-001",
-    stream: "Natural",
+    track: "Natural",
     subject: "Biology",
-    emoji: "🧬",
     question:
-      "Which organelle is known as the powerhouse of the cell?",
+      "Which organelle is commonly called the powerhouse of the cell?",
     options: [
-      "A) Nucleus",
-      "B) Mitochondrion",
-      "C) Ribosome",
-      "D) Cell wall"
+      "A. Nucleus",
+      "B. Mitochondrion",
+      "C. Ribosome",
+      "D. Cell wall"
     ],
-    correctAnswer: "B",
+    correct: "B",
     explanation:
-      "Mitochondria produce much of the usable energy that cells need for their activities."
+      "Mitochondria produce much of the usable energy in cells."
   },
   {
     id: "physics-001",
-    stream: "Natural",
+    track: "Natural",
     subject: "Physics",
-    emoji: "⚡",
     question:
       "What is the SI unit of force?",
     options: [
-      "A) Joule",
-      "B) Watt",
-      "C) Newton",
-      "D) Pascal"
+      "A. Joule",
+      "B. Watt",
+      "C. Newton",
+      "D. Pascal"
     ],
-    correctAnswer: "C",
+    correct: "C",
     explanation:
-      "The SI unit of force is the newton (N)."
+      "Force is measured in newtons (N)."
   },
   {
     id: "mathematics-001",
-    stream: "Natural",
+    track: "Natural",
     subject: "Mathematics",
-    emoji: "📐",
     question:
-      "What is the value of 7 × 8?",
+      "What is 7 × 8?",
     options: [
-      "A) 54",
-      "B) 56",
-      "C) 64",
-      "D) 58"
+      "A. 54",
+      "B. 56",
+      "C. 64",
+      "D. 58"
     ],
-    correctAnswer: "B",
+    correct: "B",
     explanation:
-      "7 multiplied by 8 equals 56."
+      "7 × 8 = 56."
   },
   {
     id: "english-001",
-    stream: "Natural",
+    track: "Natural",
     subject: "English",
-    emoji: "📘",
     question:
       "Which word is a noun?",
     options: [
-      "A) Quickly",
-      "B) Beautiful",
-      "C) Student",
-      "D) Run"
+      "A. Quickly",
+      "B. Run",
+      "C. Teacher",
+      "D. Beautiful"
     ],
-    correctAnswer: "C",
+    correct: "C",
     explanation:
-      "A noun names a person, place, thing, or idea. 'Student' is a noun."
+      "Teacher is a noun because it names a person."
   },
   {
     id: "aptitude-001",
-    stream: "Natural",
+    track: "Natural",
     subject: "Scholastic Aptitude",
-    emoji: "🧠",
     question:
-      "If all roses are flowers and some flowers are red, which statement must be true?",
+      "All roses are flowers. Some flowers fade quickly. Which conclusion is definitely true?",
     options: [
-      "A) All roses are red",
-      "B) Some roses are not flowers",
-      "C) All roses are flowers",
-      "D) No flowers are roses"
+      "A. All flowers are roses",
+      "B. Some roses must fade quickly",
+      "C. Roses are flowers",
+      "D. No roses fade quickly"
     ],
-    correctAnswer: "C",
+    correct: "C",
     explanation:
-      "The first statement directly tells us that all roses are flowers."
+      "The first statement directly establishes that roses are flowers."
   },
   {
     id: "geography-001",
-    stream: "Social",
+    track: "Social",
     subject: "Geography",
-    emoji: "🌍",
     question:
-      "What is the imaginary line that divides Earth into Northern and Southern Hemispheres?",
+      "Which imaginary line divides Earth into Northern and Southern Hemispheres?",
     options: [
-      "A) Prime Meridian",
-      "B) Equator",
-      "C) Tropic of Cancer",
-      "D) International Date Line"
+      "A. Prime Meridian",
+      "B. Equator",
+      "C. Tropic of Cancer",
+      "D. Arctic Circle"
     ],
-    correctAnswer: "B",
+    correct: "B",
     explanation:
-      "The Equator is the imaginary line at 0° latitude dividing Earth into Northern and Southern Hemispheres."
+      "The Equator is at 0° latitude and divides the two hemispheres."
   },
   {
     id: "economics-001",
-    stream: "Social",
+    track: "Social",
     subject: "Economics",
-    emoji: "📈",
     question:
-      "What does scarcity mean in economics?",
+      "What economic problem exists because resources are limited while wants are unlimited?",
     options: [
-      "A) Resources are unlimited",
-      "B) Human wants are limited",
-      "C) Resources are limited relative to human wants",
-      "D) Goods have no value"
+      "A. Inflation",
+      "B. Scarcity",
+      "C. Monopoly",
+      "D. Profit"
     ],
-    correctAnswer: "C",
+    correct: "B",
     explanation:
-      "Scarcity exists because resources are limited while human wants are unlimited."
+      "Scarcity means resources are insufficient to satisfy all human wants."
   },
   {
     id: "history-001",
-    stream: "Social",
+    track: "Social",
     subject: "History",
-    emoji: "🏛️",
     question:
-      "Which source can provide direct evidence about the past?",
+      "Which is an example of a primary historical source?",
     options: [
-      "A) Primary source",
-      "B) Random guess",
-      "C) Future prediction",
-      "D) Fictional story"
+      "A. A diary written during the event",
+      "B. A modern textbook",
+      "C. A later encyclopedia",
+      "D. A recent documentary"
     ],
-    correctAnswer: "A",
+    correct: "A",
     explanation:
-      "A primary source is original evidence from the period being studied, such as a document, artifact, or firsthand account."
+      "A diary created during the historical period is a primary source."
   },
   {
     id: "social-math-001",
-    stream: "Social",
+    track: "Social",
     subject: "Mathematics",
-    emoji: "📐",
     question:
       "If x + 5 = 12, what is x?",
     options: [
-      "A) 5",
-      "B) 6",
-      "C) 7",
-      "D) 8"
+      "A. 5",
+      "B. 6",
+      "C. 7",
+      "D. 8"
     ],
-    correctAnswer: "C",
+    correct: "C",
     explanation:
-      "Subtract 5 from both sides: x = 12 − 5 = 7."
+      "Subtract 5 from both sides: x = 7."
   },
   {
     id: "social-english-001",
-    stream: "Social",
+    track: "Social",
     subject: "English",
-    emoji: "📘",
     question:
-      "Choose the sentence with correct subject-verb agreement.",
+      "Choose the correct sentence.",
     options: [
-      "A) She go to school.",
-      "B) She goes to school.",
-      "C) She going to school.",
-      "D) She gone to school."
+      "A. She walk to school.",
+      "B. She walks to school.",
+      "C. She walking to school.",
+      "D. She walkings to school."
     ],
-    correctAnswer: "B",
+    correct: "B",
     explanation:
-      "With the singular subject 'she' in the simple present tense, the verb takes 's': 'She goes.'"
+      "With the singular subject 'she', the present-simple verb is 'walks'."
   }
 ];
 
-function getTodayKey() {
-  return new Intl.DateTimeFormat(
-    "en-CA",
-    {
-      timeZone: "Africa/Addis_Ababa"
-    }
-  ).format(new Date());
+function todayAddis() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Addis_Ababa"
+  }).format(new Date());
 }
 
-function isEarlyBirdTime() {
-  const hour = Number(
-    new Intl.DateTimeFormat(
-      "en-US",
-      {
-        timeZone: "Africa/Addis_Ababa",
-        hour: "numeric",
-        hour12: false
-      }
-    ).format(new Date())
+function currentAddisHour() {
+  return Number(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: "Africa/Addis_Ababa",
+      hour: "2-digit",
+      hour12: false
+    }).format(new Date())
   );
-
-  return hour < 8;
 }
 
-function generateFineBotId() {
-  const randomPart =
-    Math.random()
-      .toString(36)
-      .substring(2, 10)
-      .toUpperCase();
-
-  return `FB-2026-${randomPart}`;
+function createFineBotId(telegramId) {
+  return `FB-${String(telegramId)
+    .replace(/\D/g, "")
+    .slice(-10)}`;
 }
 
-function mapDatabaseStudent(row) {
-  return {
-    telegramId: Number(row.telegram_id),
-    firstName:
-      row.first_name || "Student",
-    username:
-      row.username || null,
-    finebotId:
-      row.finebot_id,
-    xp: Number(row.xp || 0),
-    streak: Number(row.streak || 0),
-    questionsAnswered:
-      Number(row.questions_answered || 0),
-    correctAnswers:
-      Number(row.correct_answers || 0),
-    lessonsCompleted:
-      Number(row.lessons_completed || 0),
-    achievements:
-      Array.isArray(row.achievements)
-        ? row.achievements
-        : [],
-    mistakes:
-      Array.isArray(row.mistakes)
-        ? row.mistakes
-        : [],
-    subjectProgress:
-      row.subject_progress &&
-      typeof row.subject_progress === "object"
-        ? row.subject_progress
-        : {},
-    lastPracticeDate:
-      row.last_practice_date || null,
-    studyBuddyMessagesToday:
-      Number(
-        row.study_buddy_messages_today || 0
-      ),
-    studyBuddyDate:
-      row.study_buddy_date || null,
-    currentQuestionId: null,
-    createdAt:
-      row.created_at ||
-      new Date().toISOString()
-  };
+function escapeText(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
-async function loadStudentFromDatabase(
-  telegramId
-) {
-  const { data, error } =
-    await supabase
-      .from("students")
-      .select("*")
-      .eq(
-        "telegram_id",
-        String(telegramId)
-      )
-      .maybeSingle();
-
-  if (error) {
-    console.error(
-      "Supabase student lookup error:",
-      error.message
-    );
-    throw error;
-  }
-
-  return data;
-}
-
-async function createStudentInDatabase(
-  ctx
-) {
-  const telegramId =
-    String(ctx.from.id);
-
-  const studentData = {
-    finebot_id:
-      generateFineBotId(),
-    telegram_id:
-      telegramId,
-    first_name:
-      ctx.from.first_name ||
-      "Student",
-    username:
-      ctx.from.username ||
-      null,
-    xp: 0,
-    streak: 0,
-    questions_answered: 0,
-    correct_answers: 0,
-    lessons_completed: 0,
-    achievements: [],
-    mistakes: [],
-    subject_progress: {},
-    last_practice_date: null,
-    study_buddy_messages_today: 0,
-    study_buddy_date: null
-  };
-
-  const { data, error } =
-    await supabase
-      .from("students")
-      .insert(studentData)
-      .select("*")
-      .single();
-
-  if (error) {
-    console.error(
-      "Supabase student creation error:",
-      error.message
-    );
-    throw error;
-  }
-
-  return mapDatabaseStudent(data);
-}
-
-async function getStudent(ctx) {
-  if (!ctx.from) {
+async function getStudent(user) {
+  if (!user || !user.id) {
     return null;
   }
 
-  const telegramId =
-    ctx.from.id;
+  const telegramId = String(user.id);
 
   if (students.has(telegramId)) {
-    const student =
-      students.get(telegramId);
-
-    student.firstName =
-      ctx.from.first_name ||
-      student.firstName ||
-      "Student";
-
-    student.username =
-      ctx.from.username ||
-      student.username ||
-      null;
-
-    return student;
+    return students.get(telegramId);
   }
 
-  const existingStudent =
-    await loadStudentFromDatabase(
-      telegramId
-    );
-
-  let student;
-
-  if (existingStudent) {
-    student =
-      mapDatabaseStudent(
-        existingStudent
-      );
-  } else {
-    student =
-      await createStudentInDatabase(
-        ctx
-      );
-  }
-
-  students.set(
-    telegramId,
-    student
-  );
-
-  return student;
-}
-
-async function saveStudent(
-  student
-) {
-  if (!student) {
-    return;
-  }
-
-  const updateData = {
-    first_name:
-      student.firstName ||
-      "Student",
-    username:
-      student.username ||
-      null,
-    xp: student.xp || 0,
-    streak:
-      student.streak || 0,
-    questions_answered:
-      student.questionsAnswered ||
-      0,
-    correct_answers:
-      student.correctAnswers ||
-      0,
-    lessons_completed:
-      student.lessonsCompleted ||
-      0,
-    achievements:
-      Array.isArray(
-        student.achievements
-      )
-        ? student.achievements
-        : [],
-    mistakes:
-      Array.isArray(
-        student.mistakes
-      )
-        ? student.mistakes
-        : [],
-    subject_progress:
-      student.subjectProgress ||
-      {},
-    last_practice_date:
-      student.lastPracticeDate ||
-      null,
-    study_buddy_messages_today:
-      student.studyBuddyMessagesToday ||
-      0,
-    study_buddy_date:
-      student.studyBuddyDate ||
-      null,
-    updated_at:
-      new Date().toISOString()
-  };
-
-  const { error } =
-    await supabase
-      .from("students")
-      .update(updateData)
-      .eq(
-        "telegram_id",
-        String(student.telegramId)
-      );
+  const { data, error } = await supabase
+    .from("students")
+    .select("*")
+    .eq("telegram_id", telegramId)
+    .maybeSingle();
 
   if (error) {
     console.error(
-      "Supabase student save error:",
+      "Student lookup error:",
       error.message
     );
-    throw error;
+    return null;
   }
+
+  if (data) {
+    students.set(telegramId, data);
+    return data;
+  }
+
+  const newStudent = {
+    finebot_id: createFineBotId(telegramId),
+    telegram_id: telegramId,
+    first_name: user.first_name || "Student",
+    username: user.username || null
+  };
+
+  const {
+    data: created,
+    error: createError
+  } = await supabase
+    .from("students")
+    .insert(newStudent)
+    .select("*")
+    .single();
+
+  if (createError) {
+    console.error(
+      "Student creation error:",
+      createError.message
+    );
+    return null;
+  }
+
+  students.set(telegramId, created);
+
+  return created;
 }
 
-async function getStudentName(ctx) {
-  const student =
-    await getStudent(ctx);
-
-  if (
-    !student ||
-    !student.firstName
-  ) {
-    return "there";
+async function saveStudent(student) {
+  if (!student || !student.telegram_id) {
+    return null;
   }
 
-  return (
-    student.firstName.trim() ||
-    "there"
+  const { data, error } = await supabase
+    .from("students")
+    .update({
+      first_name: student.first_name,
+      username: student.username,
+      xp: student.xp,
+      streak: student.streak,
+      questions_answered:
+        student.questions_answered,
+      correct_answers:
+        student.correct_answers,
+      lessons_completed:
+        student.lessons_completed,
+      achievements:
+        student.achievements,
+      mistakes:
+        student.mistakes,
+      subject_progress:
+        student.subject_progress,
+      last_practice_date:
+        student.last_practice_date,
+      study_buddy_messages_today:
+        student.study_buddy_messages_today,
+      study_buddy_date:
+        student.study_buddy_date,
+      updated_at: new Date().toISOString()
+    })
+    .eq(
+      "telegram_id",
+      String(student.telegram_id)
+    )
+    .select("*")
+    .single();
+
+  if (error) {
+    console.error(
+      "Student save error:",
+      error.message
+    );
+    return null;
+  }
+
+  students.set(
+    String(student.telegram_id),
+    data
   );
-}
 
-function getUsernameText(student) {
-  if (
-    !student ||
-    !student.username
-  ) {
-    return "No username";
-  }
-
-  return `@${student.username}`;
+  return data;
 }
 
 function getAccuracy(student) {
   if (
     !student ||
-    student.questionsAnswered === 0
+    !Number(student.questions_answered)
   ) {
     return 0;
   }
 
   return Math.round(
-    (student.correctAnswers /
-      student.questionsAnswered) *
+    (Number(student.correct_answers) /
+      Number(student.questions_answered)) *
       100
   );
-}
-
-function updateStreak(student) {
-  const today =
-    getTodayKey();
-
-  if (!student.lastPracticeDate) {
-    student.streak = 1;
-    student.lastPracticeDate =
-      today;
-    return;
-  }
-
-  if (
-    student.lastPracticeDate ===
-    today
-  ) {
-    return;
-  }
-
-  const previous =
-    new Date(
-      `${student.lastPracticeDate}T00:00:00+03:00`
-    );
-
-  const current =
-    new Date(
-      `${today}T00:00:00+03:00`
-    );
-
-  const difference =
-    Math.round(
-      (current - previous) /
-        86400000
-    );
-
-  if (difference === 1) {
-    student.streak += 1;
-  } else {
-    student.streak = 1;
-  }
-
-  student.lastPracticeDate =
-    today;
-}
-
-function addAchievement(
-  student,
-  achievement
-) {
-  if (
-    student.achievements.includes(
-      achievement
-    )
-  ) {
-    return false;
-  }
-
-  student.achievements.push(
-    achievement
-  );
-
-  return true;
-}
-
-function updateAchievements(student) {
-  const unlocked = [];
-
-  if (
-    student.questionsAnswered >=
-      1 &&
-    addAchievement(
-      student,
-      "First Step"
-    )
-  ) {
-    unlocked.push(
-      "🌱 First Step"
-    );
-  }
-
-  if (
-    student.lessonsCompleted >=
-      10 &&
-    addAchievement(
-      student,
-      "Bookworm"
-    )
-  ) {
-    unlocked.push(
-      "📚 Bookworm"
-    );
-  }
-
-  if (
-    student.correctAnswers >=
-      100 &&
-    addAchievement(
-      student,
-      "Scholar"
-    )
-  ) {
-    unlocked.push(
-      "🎓 Scholar"
-    );
-  }
-
-  if (
-    student.streak >= 7 &&
-    addAchievement(
-      student,
-      "Streak Keeper"
-    )
-  ) {
-    unlocked.push(
-      "🔥 Streak Keeper"
-    );
-  }
-
-  if (
-    isEarlyBirdTime() &&
-    addAchievement(
-      student,
-      "Early Bird"
-    )
-  ) {
-    unlocked.push(
-      "🌅 Early Bird"
-    );
-  }
-
-  return unlocked;
 }
 
 function homeKeyboard() {
@@ -736,510 +422,961 @@ function homeKeyboard() {
   ]);
 }
 
-async function homeText(ctx) {
-  const student =
-    await getStudent(ctx);
-
-  const name =
-    await getStudentName(ctx);
-
+function homeText(student) {
   return (
-    "🌟 FINEBOT\n" +
-    "Grade 12 Mastering Companion\n\n" +
-    `👋 Good to have you here, ${name}!\n\n` +
-    "Ready to make your brain a little stronger today?\n\n" +
-    `🔥 ${student.streak} day streak   ·   ⭐ ${student.xp} XP\n` +
-    `📚 ${student.questionsAnswered} questions   ·   🎯 ${getAccuracy(student)}% accuracy\n\n` +
-    `${getUsernameText(student)}`
+    `<b>FINEBOT</b>\n` +
+    `<b>Grade 12 Mastering Companion</b>\n\n` +
+    `Hey ${escapeText(
+      student?.first_name || "Student"
+    )}! 👋\n` +
+    `Let's make your next study move count.\n\n` +
+    `🔥 Streak: <b>${
+      student?.streak || 0
+    }</b>\n` +
+    `⭐ XP: <b>${
+      student?.xp || 0
+    }</b>\n` +
+    `✍️ Questions: <b>${
+      student?.questions_answered || 0
+    }</b>\n` +
+    `🎯 Accuracy: <b>${getAccuracy(
+      student
+    )}%</b>`
   );
 }
 
-async function showHome(ctx) {
-  const text =
-    await homeText(ctx);
+async function showHome(ctx, edit = false) {
+  const student =
+    await getStudent(ctx.from);
 
-  const keyboard =
-    homeKeyboard();
+  if (!student) {
+    return ctx.reply(
+      "FineBot could not load your student profile."
+    );
+  }
 
-  if (ctx.callbackQuery) {
+  const options = {
+    parse_mode: "HTML",
+    ...homeKeyboard()
+  };
+
+  if (edit) {
     try {
-      await ctx.editMessageText(
-        text,
-        keyboard
+      return await ctx.editMessageText(
+        homeText(student),
+        options
       );
-      return;
     } catch (error) {
       if (
-        !error.description ||
-        !error.description.includes(
-          "message is not modified"
-        )
+        !String(error.message || "")
+          .includes("message is not modified")
       ) {
-        throw error;
+        console.error(
+          "Home edit error:",
+          error.message
+        );
       }
-      return;
     }
-  }
-
-  await ctx.reply(
-    text,
-    keyboard
-  );
-}
-
-bot.start(
-  async ctx => {
-    try {
-      await getStudent(ctx);
-      await showHome(ctx);
-    } catch (error) {
-      console.error(
-        "Start error:",
-        error.message
-      );
-
-      await ctx.reply(
-        "I couldn't load your FineBot profile right now. 😅\n\n" +
-          "Please try /start again in a moment."
-      );
-    }
-  }
-);
-EOF
-cat >> api/index.js <<'EOF'
-
-bot.action(
-  "home_learn",
-  async ctx => {
-    await ctx.answerCbQuery();
-
-    const menu =
-      getLearnEnglishMenu();
-
-    const text =
-      "📚 LEARN\n\n" +
-      "Let's build your understanding one step at a time. 🧠\n\n" +
-      "For now, we're starting with English.\n\n" +
-      "Choose what you want to strengthen:";
-
-    const buttons =
-      menu.map(
-        category => [
-          Markup.button.callback(
-            `${category.emoji} ${category.title}`,
-            `learn_category_${category.category}`
-          )
-        ]
-      );
-
-    buttons.push([
-      Markup.button.callback(
-        "🏠 Home",
-        "back_home"
-      )
-    ]);
-
-    await ctx.editMessageText(
-      text,
-      Markup.inlineKeyboard(
-        buttons
-      )
-    );
-  }
-);
-
-bot.action(
-  /^learn_category_(.+)$/,
-  async ctx => {
-    await ctx.answerCbQuery();
-
-    const category =
-      ctx.match[1];
-
-    const lessons =
-      getEnglishLessonsByCategory(
-        category
-      );
-
-    if (!lessons.length) {
-      await ctx.editMessageText(
-        "I couldn't find lessons in that category yet. 😅",
-        Markup.inlineKeyboard([
-          [
-            Markup.button.callback(
-              "⬅️ English",
-              "home_learn"
-            )
-          ],
-          [
-            Markup.button.callback(
-              "🏠 Home",
-              "back_home"
-            )
-          ]
-        ])
-      );
-
-      return;
-    }
-
-    const menu =
-      getLearnEnglishMenu();
-
-    const categoryInfo =
-      menu.find(
-        item =>
-          item.category ===
-          category
-      );
-
-    const text =
-      `${categoryInfo ? categoryInfo.emoji : "📚"} ${
-        categoryInfo
-          ? categoryInfo.title
-          : "ENGLISH"
-      }\n\n` +
-      "Choose a lesson:";
-
-    const buttons =
-      lessons.map(
-        lesson => [
-          Markup.button.callback(
-            lesson.title,
-            `learn_lesson_${lesson.id}`
-          )
-        ]
-      );
-
-    buttons.push([
-      Markup.button.callback(
-        "⬅️ English",
-        "home_learn"
-      )
-    ]);
-
-    buttons.push([
-      Markup.button.callback(
-        "🏠 Home",
-        "back_home"
-      )
-    ]);
-
-    await ctx.editMessageText(
-      text,
-      Markup.inlineKeyboard(
-        buttons
-      )
-    );
-  }
-);
-
-bot.action(
-  /^learn_lesson_(.+)$/,
-  async ctx => {
-    await ctx.answerCbQuery();
-
-    const lessonId =
-      ctx.match[1];
-
-    const result =
-      openEnglishLesson(
-        lessonId
-      );
-
-    if (!result.success) {
-      await ctx.editMessageText(
-        "I couldn't open that lesson right now. 😅",
-        Markup.inlineKeyboard([
-          [
-            Markup.button.callback(
-              "⬅️ English",
-              "home_learn"
-            )
-          ],
-          [
-            Markup.button.callback(
-              "🏠 Home",
-              "back_home"
-            )
-          ]
-        ])
-      );
-
-      return;
-    }
-
-    const telegramId =
-      ctx.from.id;
-
-    learningSessions.set(
-      telegramId,
-      result.session
-    );
-
-    await showLearningSession(
-      ctx
-    );
-  }
-);
-
-async function showLearningSession(ctx) {
-  const telegramId =
-    ctx.from.id;
-
-  const session =
-    learningSessions.get(
-      telegramId
-    );
-
-  if (!session) {
-    await ctx.editMessageText(
-      "Your learning session is no longer active. Let's start again. 📚",
-      Markup.inlineKeyboard([
-        [
-          Markup.button.callback(
-            "📚 Learn",
-            "home_learn"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "🏠 Home",
-            "back_home"
-          )
-        ]
-      ])
-    );
 
     return;
   }
 
-  const snapshot =
-    getSnapshot(session);
-
-  if (!snapshot) {
-    await ctx.editMessageText(
-      "I couldn't load this lesson session. 😅",
-      Markup.inlineKeyboard([
-        [
-          Markup.button.callback(
-            "📚 Learn",
-            "home_learn"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "🏠 Home",
-            "back_home"
-          )
-        ]
-      ])
-    );
-
-    return;
-  }
-
-  const presentation =
-    snapshot.presentation;
-
-  let text =
-    `${presentation.label}\n\n`;
-
-  text +=
-    `📚 ${presentation.lessonTitle}\n\n`;
-
-  if (
-    presentation.conceptNumber
-  ) {
-    text +=
-      `Concept ${presentation.conceptNumber}\n\n`;
-  }
-
-  text +=
-    `${presentation.title}\n\n`;
-
-  text +=
-    formatLearningContent(
-      presentation.content
-    );
-
-  text +=
-    `\n\n📊 ${snapshot.progress.current}/${snapshot.progress.total} · ${snapshot.progress.percentage}%`;
-
-  await ctx.editMessageText(
-    text,
-    getLearningKeyboard(
-      snapshot
-    )
+  return ctx.reply(
+    homeText(student),
+    options
   );
 }
+function updateStreak(student) {
+  const today = todayAddis();
+  const previous =
+    student.last_practice_date;
 
-function formatLearningContent(content) {
-  if (!content) {
-    return "";
-  }
+  if (!previous) {
+    student.streak = 1;
+  } else if (previous === today) {
+    return;
+  } else {
+    const oldDate =
+      new Date(
+        `${previous}T00:00:00+03:00`
+      );
 
-  if (
-    content.type ===
-    "intro"
-  ) {
-    return (
-      `${content.hook || ""}\n\n` +
-      `${content.goal || ""}\n\n` +
-      `${content.quickStart || ""}`
+    const currentDate =
+      new Date(
+        `${today}T00:00:00+03:00`
+      );
+
+    const difference = Math.round(
+      (currentDate.getTime() -
+        oldDate.getTime()) /
+        86400000
     );
+
+    if (difference === 1) {
+      student.streak =
+        Number(student.streak || 0) + 1;
+    } else {
+      student.streak = 1;
+    }
   }
 
-  if (
-    content.type ===
-    "concept"
-  ) {
-    return (
-      `${content.explanation || ""}` +
-      formatOptionalBlock(
-        "📝 NOTE",
-        content.note
-      ) +
-      formatOptionalBlock(
-        "💡 ANALOGY",
-        content.analogy
-      )
-    );
-  }
-
-  if (
-    content.type ===
-    "example"
-  ) {
-    return (
-      `💬 ${content.prompt || ""}` +
-      formatOptionalBlock(
-        "Answer",
-        content.answer
-      ) +
-      formatOptionalBlock(
-        "Why",
-        content.explanation
-      )
-    );
-  }
-
-  if (
-    content.type ===
-    "micro_check"
-  ) {
-    return (
-      `${content.question || ""}\n\n` +
-      formatOptions(
-        content.options
-      )
-    );
-  }
-
-  if (
-    content.type ===
-    "application"
-  ) {
-    return (
-      `${content.prompt || ""}\n\n` +
-      formatOptions(
-        content.options
-      )
-    );
-  }
-
-  if (
-    content.type ===
-    "exam_connection"
-  ) {
-    return (
-      `Skill: ${content.skill || ""}\n\n` +
-      `${content.examTip || ""}` +
-      formatOptionalBlock(
-        "⚠️ Common trap",
-        content.commonTrap
-      )
-    );
-  }
-
-  if (
-    content.type ===
-    "final_stretch"
-  ) {
-    return (
-      `${content.message || ""}`
-    );
-  }
-
-  if (
-    content.type ===
-    "completion"
-  ) {
-    return (
-      `${content.message || ""}` +
-      formatOptionalBlock(
-        "🎯 Takeaway",
-        content.takeaway
-      ) +
-      formatOptionalBlock(
-        "➡️ Next",
-        content.nextStep
-      )
-    );
-  }
-
-  return Object.values(
-    content
-  )
-    .filter(
-      value =>
-        typeof value ===
-        "string"
-    )
-    .join("\n\n");
+  student.last_practice_date = today;
 }
 
-function formatOptionalBlock(
-  title,
-  value
+function addAchievement(
+  student,
+  achievement
 ) {
-  if (!value) {
-    return "";
+  const achievements =
+    Array.isArray(student.achievements)
+      ? student.achievements
+      : [];
+
+  if (
+    !achievements.includes(
+      achievement
+    )
+  ) {
+    achievements.push(achievement);
   }
 
+  student.achievements =
+    achievements;
+}
+
+function updateAchievements(student) {
+  if (
+    Number(student.questions_answered) >=
+    1
+  ) {
+    addAchievement(
+      student,
+      "First Step"
+    );
+  }
+
+  if (
+    Number(student.lessons_completed) >=
+    10
+  ) {
+    addAchievement(
+      student,
+      "Bookworm"
+    );
+  }
+
+  if (
+    Number(student.correct_answers) >=
+    100
+  ) {
+    addAchievement(
+      student,
+      "Scholar"
+    );
+  }
+
+  if (
+    Number(student.streak) >=
+    7
+  ) {
+    addAchievement(
+      student,
+      "Streak Keeper"
+    );
+  }
+
+  if (currentAddisHour() < 8) {
+    addAchievement(
+      student,
+      "Early Bird"
+    );
+  }
+}
+
+function findQuestion(id) {
   return (
-    `\n\n${title}\n${value}`
+    QUESTIONS.find(
+      question => question.id === id
+    ) || null
   );
 }
 
-function formatOptions(options) {
-  if (
-    !Array.isArray(options)
-  ) {
-    return "";
-  }
-
-  return options
-    .map(
-      (option, index) =>
-        `${String.fromCharCode(
-          65 + index
-        )}) ${option}`
-    )
-    .join("\n");
+function findQuestions(
+  track,
+  subject
+) {
+  return QUESTIONS.filter(
+    question =>
+      question.track === track &&
+      question.subject === subject
+  );
 }
 
-function getLearningKeyboard(
-  snapshot
+function questionKeyboard(question) {
+  return Markup.inlineKeyboard(
+    question.options.map(option => [
+      Markup.button.callback(
+        option,
+        `answer_${question.id}_${option.charAt(0)}`
+      )
+    ])
+  );
+}
+
+function questionText(question) {
+  return (
+    `<b>${escapeText(
+      question.subject
+    )}</b>\n\n` +
+    `${escapeText(
+      question.question
+    )}\n\n` +
+    question.options
+      .map(option =>
+        escapeText(option)
+      )
+      .join("\n")
+  );
+}
+
+async function sendQuestion(
+  ctx,
+  question
+) {
+  if (!question) {
+    return ctx.reply(
+      "No question is available for this subject yet."
+    );
+  }
+
+  return ctx.reply(
+    questionText(question),
+    {
+      parse_mode: "HTML",
+      ...questionKeyboard(question)
+    }
+  );
+}
+
+function practiceTrackKeyboard() {
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback(
+        "🌿 Natural",
+        "practice_track_Natural"
+      ),
+      Markup.button.callback(
+        "🌍 Social",
+        "practice_track_Social"
+      )
+    ],
+    [
+      Markup.button.callback(
+        "🏠 Home",
+        "back_home"
+      )
+    ]
+  ]);
+}
+
+function practiceSubjectKeyboard(
+  track
+) {
+  const subjects =
+    track === "Natural"
+      ? [
+          "English",
+          "Mathematics",
+          "Biology",
+          "Chemistry",
+          "Physics",
+          "Scholastic Aptitude"
+        ]
+      : [
+          "English",
+          "Mathematics",
+          "Geography",
+          "Economics",
+          "History"
+        ];
+
+  const rows = [];
+
+  for (
+    let i = 0;
+    i < subjects.length;
+    i += 2
+  ) {
+    const row = [
+      Markup.button.callback(
+        subjects[i],
+        `practice_subject_${encodeURIComponent(
+          subjects[i]
+        )}`
+      )
+    ];
+
+    if (subjects[i + 1]) {
+      row.push(
+        Markup.button.callback(
+          subjects[i + 1],
+          `practice_subject_${encodeURIComponent(
+            subjects[i + 1]
+          )}`
+        )
+      );
+    }
+
+    rows.push(row);
+  }
+
+  rows.push([
+    Markup.button.callback(
+      "↩️ Tracks",
+      "home_practice"
+    ),
+    Markup.button.callback(
+      "🏠 Home",
+      "back_home"
+    )
+  ]);
+
+  return Markup.inlineKeyboard(
+    rows
+  );
+}
+
+async function showPractice(
+  ctx,
+  edit = false
+) {
+  const text =
+    `<b>✍️ Practice</b>\n\n` +
+    `Choose your exam track.\n\n` +
+    `Answer questions, build XP, and let FineBot learn where you need more practice.`;
+
+  const options = {
+    parse_mode: "HTML",
+    ...practiceTrackKeyboard()
+  };
+
+  if (edit) {
+    return ctx.editMessageText(
+      text,
+      options
+    );
+  }
+
+  return ctx.reply(
+    text,
+    options
+  );
+}
+
+async function showPracticeSubjects(
+  ctx,
+  track
+) {
+  return ctx.editMessageText(
+    `<b>📚 ${escapeText(
+      track
+    )}</b>\n\nChoose a subject to practice.`,
+    {
+      parse_mode: "HTML",
+      ...practiceSubjectKeyboard(
+        track
+      )
+    }
+  );
+}
+
+async function openPracticeSubject(
+  ctx,
+  encodedSubject
+) {
+  const subject =
+    decodeURIComponent(
+      encodedSubject
+    );
+
+  const natural = [
+    "English",
+    "Mathematics",
+    "Biology",
+    "Chemistry",
+    "Physics",
+    "Scholastic Aptitude"
+  ];
+
+  const social = [
+    "English",
+    "Mathematics",
+    "Geography",
+    "Economics",
+    "History"
+  ];
+
+  let track = null;
+
+  if (natural.includes(subject)) {
+    track = "Natural";
+  }
+
+  if (social.includes(subject)) {
+    track = "Social";
+  }
+
+  if (!track) {
+    return ctx.answerCbQuery(
+      "Subject unavailable."
+    );
+  }
+
+  const questions =
+    findQuestions(
+      track,
+      subject
+    );
+
+  if (!questions.length) {
+    return ctx.editMessageText(
+      `<b>${escapeText(
+        subject
+      )}</b>\n\nThe question bank for this subject is being prepared.`,
+      {
+        parse_mode: "HTML",
+        ...Markup.inlineKeyboard([
+          [
+            Markup.button.callback(
+              "↩️ Subjects",
+              `practice_track_${track}`
+            )
+          ],
+          [
+            Markup.button.callback(
+              "🏠 Home",
+              "back_home"
+            )
+          ]
+        ])
+      }
+    );
+  }
+
+  const question =
+    questions[
+      Math.floor(
+        Math.random() *
+          questions.length
+      )
+    ];
+
+  return sendQuestion(
+    ctx,
+    question
+  );
+}
+
+async function processAnswer(
+  ctx,
+  questionId,
+  selected
+) {
+  const question =
+    findQuestion(
+      questionId
+    );
+
+  if (!question) {
+    return ctx.answerCbQuery(
+      "Question unavailable."
+    );
+  }
+
+  const student =
+    await getStudent(
+      ctx.from
+    );
+
+  if (!student) {
+    return ctx.answerCbQuery(
+      "Student profile unavailable."
+    );
+  }
+
+  const correct =
+    selected ===
+    question.correct;
+
+  updateStreak(student);
+
+  student.questions_answered =
+    Number(
+      student.questions_answered || 0
+    ) + 1;
+
+  if (correct) {
+    student.correct_answers =
+      Number(
+        student.correct_answers || 0
+      ) + 1;
+
+    student.xp =
+      Number(
+        student.xp || 0
+      ) +
+      5 +
+      (Number(student.streak || 0) > 1
+        ? 10
+        : 0);
+  } else {
+    const mistakes =
+      Array.isArray(
+        student.mistakes
+      )
+        ? student.mistakes
+        : [];
+
+    mistakes.push({
+      questionId:
+        question.id,
+      subject:
+        question.subject,
+      date:
+        todayAddis()
+    });
+
+    student.mistakes =
+      mistakes.slice(-100);
+  }
+
+  updateAchievements(
+    student
+  );
+
+  await saveStudent(
+    student
+  );
+
+  const title = correct
+    ? "✅ Correct!"
+    : "❌ Not quite.";
+
+  const answerText = correct
+    ? "You got it! +XP added."
+    : `The correct answer is <b>${escapeText(
+        question.correct
+      )}</b>.`;
+
+  return ctx.editMessageText(
+    `<b>${title}</b>\n\n` +
+      `${answerText}\n\n` +
+      `<b>📖 Why?</b>\n` +
+      `${escapeText(
+        question.explanation
+      )}\n\n` +
+      `⭐ XP: <b>${student.xp}</b>\n` +
+      `🔥 Streak: <b>${student.streak}</b>`,
+    {
+      parse_mode: "HTML",
+      ...Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            "➡️ Next Question",
+            `next_question_${encodeURIComponent(
+              question.subject
+            )}`
+          )
+        ],
+        [
+          Markup.button.callback(
+            "📊 My Journey",
+            "home_journey"
+          ),
+          Markup.button.callback(
+            "🏠 Home",
+            "back_home"
+          )
+        ]
+      ])
+    }
+  );
+}
+
+async function nextQuestion(
+  ctx,
+  encodedSubject
+) {
+  const subject =
+    decodeURIComponent(
+      encodedSubject
+    );
+
+  const natural = [
+    "English",
+    "Mathematics",
+    "Biology",
+    "Chemistry",
+    "Physics",
+    "Scholastic Aptitude"
+  ];
+
+  const track =
+    natural.includes(subject)
+      ? "Natural"
+      : "Social";
+
+  const questions =
+    findQuestions(
+      track,
+      subject
+    );
+
+  if (!questions.length) {
+    return ctx.answerCbQuery(
+      "No question available."
+    );
+  }
+
+  const question =
+    questions[
+      Math.floor(
+        Math.random() *
+          questions.length
+      )
+    ];
+
+  return sendQuestion(
+    ctx,
+    question
+  );
+}
+async function showJourney(
+  ctx,
+  edit = false
+) {
+  const student =
+    await getStudent(
+      ctx.from
+    );
+
+  if (!student) {
+    return ctx.reply(
+      "FineBot could not load your journey."
+    );
+  }
+
+  const achievements =
+    Array.isArray(
+      student.achievements
+    )
+      ? student.achievements
+      : [];
+
+  const achievementText =
+    achievements.length
+      ? achievements
+          .map(
+            item =>
+              `🏅 ${escapeText(item)}`
+          )
+          .join("\n")
+      : "No achievements yet.";
+
+  const text =
+    `<b>📊 My Journey</b>\n\n` +
+    `⭐ XP: <b>${student.xp}</b>\n` +
+    `🔥 Streak: <b>${student.streak}</b>\n` +
+    `✍️ Questions: <b>${student.questions_answered}</b>\n` +
+    `✅ Correct: <b>${student.correct_answers}</b>\n` +
+    `🎯 Accuracy: <b>${getAccuracy(student)}%</b>\n` +
+    `📚 Lessons completed: <b>${student.lessons_completed}</b>\n\n` +
+    `<b>Achievements</b>\n` +
+    achievementText;
+
+  const options = {
+    parse_mode: "HTML",
+    ...Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          "🩹 Fix My Weak",
+          "journey_weak"
+        )
+      ],
+      [
+        Markup.button.callback(
+          "🏠 Home",
+          "back_home"
+        )
+      ]
+    ])
+  };
+
+  if (edit) {
+    return ctx.editMessageText(
+      text,
+      options
+    );
+  }
+
+  return ctx.reply(
+    text,
+    options
+  );
+}
+
+async function showWeak(
+  ctx
+) {
+  const student =
+    await getStudent(
+      ctx.from
+    );
+
+  if (!student) {
+    return ctx.answerCbQuery(
+      "Student profile unavailable."
+    );
+  }
+
+  const mistakes =
+    Array.isArray(
+      student.mistakes
+    )
+      ? student.mistakes
+      : [];
+
+  if (!mistakes.length) {
+    return ctx.editMessageText(
+      `<b>🩹 Fix My Weak</b>\n\n` +
+        `You don't have tracked mistakes yet.\n\n` +
+        `Practice more and FineBot will build your weakness history.`,
+      {
+        parse_mode: "HTML",
+        ...Markup.inlineKeyboard([
+          [
+            Markup.button.callback(
+              "✍️ Practice",
+              "home_practice"
+            )
+          ],
+          [
+            Markup.button.callback(
+              "🏠 Home",
+              "back_home"
+            )
+          ]
+        ])
+      }
+    );
+  }
+
+  const counts = {};
+
+  for (
+    const mistake of mistakes
+  ) {
+    const subject =
+      mistake.subject ||
+      "Unknown";
+
+    counts[subject] =
+      (counts[subject] || 0) +
+      1;
+  }
+
+  const weakest =
+    Object.entries(
+      counts
+    )
+      .sort(
+        (a, b) => b[1] - a[1]
+      )
+      .slice(0, 3);
+
+  const list =
+    weakest
+      .map(
+        ([subject, count]) =>
+          `• ${escapeText(subject)} — ${count} missed`
+      )
+      .join("\n");
+
+  return ctx.editMessageText(
+    `<b>🩹 Fix My Weak</b>\n\n` +
+      `Your recent mistakes point to:\n\n` +
+      list +
+      `\n\nPractice those areas again to strengthen them.`,
+    {
+      parse_mode: "HTML",
+      ...Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            "✍️ Practice",
+            "home_practice"
+          )
+        ],
+        [
+          Markup.button.callback(
+            "📊 My Journey",
+            "home_journey"
+          )
+        ],
+        [
+          Markup.button.callback(
+            "🏠 Home",
+            "back_home"
+          )
+        ]
+      ])
+    }
+  );
+}
+
+function learnTrackKeyboard() {
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback(
+        "🌿 Natural",
+        "learn_track_natural"
+      ),
+      Markup.button.callback(
+        "🌍 Social",
+        "learn_track_social"
+      )
+    ],
+    [
+      Markup.button.callback(
+        "🏠 Home",
+        "back_home"
+      )
+    ]
+  ]);
+}
+
+async function showLearn(
+  ctx,
+  edit = false
+) {
+  const text =
+    `<b>📚 Learn</b>\n\n` +
+    `Choose your Grade 12 track.\n\n` +
+    `For this first live test, FineBot's English learning system is connected first.`;
+
+  const options = {
+    parse_mode: "HTML",
+    ...learnTrackKeyboard()
+  };
+
+  if (edit) {
+    return ctx.editMessageText(
+      text,
+      options
+    );
+  }
+
+  return ctx.reply(
+    text,
+    options
+  );
+}
+
+function englishLessonKeyboard(
+  track
+) {
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback(
+        "▶️ Start Main Idea",
+        `learn_open_${FIRST_ENGLISH_LESSON}_${track}`
+      )
+    ],
+    [
+      Markup.button.callback(
+        "↩️ Subjects",
+        `learn_track_${track}`
+      )
+    ],
+    [
+      Markup.button.callback(
+        "🏠 Home",
+        "back_home"
+      )
+    ]
+  ]);
+}
+
+async function showEnglish(
+  ctx,
+  track
+) {
+  const menu =
+    getLearnEnglishMenu();
+
+  const lesson =
+    menu
+      .flatMap(
+        category =>
+          category.lessons || []
+      )
+      .find(
+        item =>
+          item.id ===
+          FIRST_ENGLISH_LESSON
+      );
+
+  if (!lesson) {
+    return ctx.editMessageText(
+      `<b>📚 English</b>\n\n` +
+        `The first English lesson could not be loaded.`,
+      {
+        parse_mode: "HTML",
+        ...Markup.inlineKeyboard([
+          [
+            Markup.button.callback(
+              "🏠 Home",
+              "back_home"
+            )
+          ]
+        ])
+      }
+    );
+  }
+
+  return ctx.editMessageText(
+    `<b>🇬🇧 English</b>\n\n` +
+      `<b>${escapeText(
+        lesson.title
+      )}</b>\n\n` +
+      `Difficulty: ${escapeText(
+        lesson.difficulty
+      )}\n\n` +
+      `This is the first live English lesson connected to FineBot.\n\n` +
+      `Let's test it properly before opening the rest of the English catalog.`,
+    {
+      parse_mode: "HTML",
+      ...englishLessonKeyboard(
+        track
+      )
+    }
+  );
+}
+
+function learningButton(
+  data
 ) {
   if (
-    snapshot.finished
+    data &&
+    data.state &&
+    isLessonFinished(
+      data.state
+    )
   ) {
     return Markup.inlineKeyboard([
       [
         Markup.button.callback(
-          "📚 Learn",
-          "home_learn"
+          "📊 My Journey",
+          "home_journey"
         )
       ],
       [
@@ -1260,10 +1397,6 @@ function getLearningKeyboard(
     ],
     [
       Markup.button.callback(
-        "📚 Learn",
-        "home_learn"
-      ),
-      Markup.button.callback(
         "🏠 Home",
         "back_home"
       )
@@ -1271,841 +1404,278 @@ function getLearningKeyboard(
   ]);
 }
 
-bot.action(
-  "learn_continue",
-  async ctx => {
-    await ctx.answerCbQuery();
-
-    const telegramId =
-      ctx.from.id;
-
-    const session =
-      learningSessions.get(
-        telegramId
-      );
-
-    if (!session) {
-      await ctx.editMessageText(
-        "Your learning session has ended. Let's start again. 📚",
-        Markup.inlineKeyboard([
-          [
-            Markup.button.callback(
-              "📚 Learn",
-              "home_learn"
-            )
-          ],
-          [
-            Markup.button.callback(
-              "🏠 Home",
-              "back_home"
-            )
-          ]
-        ])
-      );
-
-      return;
-    }
-
-    const result =
-      advanceLesson(
-        session.lesson,
-        session.state
-      );
-
-    if (!result.success) {
-      await ctx.editMessageText(
-        "I couldn't move the lesson forward. 😅",
-        Markup.inlineKeyboard([
-          [
-            Markup.button.callback(
-              "📚 Learn",
-              "home_learn"
-            )
-          ],
-          [
-            Markup.button.callback(
-              "🏠 Home",
-              "back_home"
-            )
-          ]
-        ])
-      );
-
-      return;
-    }
-
-    session.state =
-      result.state;
-
-    learningSessions.set(
-      telegramId,
-      session
-    );
-
-    if (
-      result.finished
-    ) {
-      await completeLearningLesson(
-        ctx,
-        session
-      );
-
-      return;
-    }
-
-    await showLearningSession(
-      ctx
-    );
-  }
-);
-
-async function completeLearningLesson(
-  ctx,
-  session
+function learningText(
+  data
 ) {
-  const student =
-    await getStudent(ctx);
+  const lesson =
+    data.lesson;
 
-  student.lessonsCompleted += 1;
-  student.xp += 10;
+  const state =
+    data.state;
 
-  const unlocked =
-    updateAchievements(
-      student
+  const section =
+    getCurrentSection(
+      lesson,
+      state
     );
 
-  await saveStudent(
-    student
-  );
-
-  learningSessions.delete(
-    ctx.from.id
-  );
-
-  let achievementText =
-    "";
-
-  if (
-    unlocked.length
-  ) {
-    achievementText =
-      "\n\n🏅 Achievement unlocked!\n" +
-      unlocked.join("\n");
-  }
-
-  const text =
-    "🏁 LESSON COMPLETE\n\n" +
-    `You finished "${session.lesson.title}". 🎉\n\n` +
-    "⭐ +10 XP\n" +
-    `⭐ Total XP: ${student.xp}\n` +
-    `📚 Lessons completed: ${student.lessonsCompleted}` +
-    achievementText;
-
-  await ctx.editMessageText(
-    text,
-    Markup.inlineKeyboard([
-      [
-        Markup.button.callback(
-          "📚 Learn",
-          "home_learn"
-        )
-      ],
-      [
-        Markup.button.callback(
-          "📊 My Journey",
-          "home_journey"
-        )
-      ],
-      [
-        Markup.button.callback(
-          "🏠 Home",
-          "back_home"
-        )
-      ]
-    ])
-  );
-}
-EOF
-cat >> api/index.js <<'EOF'
-
-bot.action(
-  "home_practice",
-  async ctx => {
-    await ctx.answerCbQuery();
-
-    const text =
-      "✍️ PRACTICE\n\n" +
-      "Every question is a chance to get a little stronger. 🧠\n\n" +
-      "Choose your stream to begin:";
-
-    await ctx.editMessageText(
-      text,
-      Markup.inlineKeyboard([
-        [
-          Markup.button.callback(
-            "🌿 Natural Sciences",
-            "practice_natural"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "🌍 Social Sciences",
-            "practice_social"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "🏠 Home",
-            "back_home"
-          )
-        ]
-      ])
-    );
-  }
-);
-
-bot.action(
-  "practice_natural",
-  async ctx => {
-    await ctx.answerCbQuery();
-
-    await ctx.editMessageText(
-      "🌿 NATURAL SCIENCES\n\nChoose a subject:",
-      Markup.inlineKeyboard([
-        [
-          Markup.button.callback(
-            "📘 English",
-            "subject_natural_english"
-          ),
-          Markup.button.callback(
-            "📐 Mathematics",
-            "subject_natural_math"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "🧬 Biology",
-            "subject_biology"
-          ),
-          Markup.button.callback(
-            "🧪 Chemistry",
-            "subject_chemistry"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "⚡ Physics",
-            "subject_physics"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "🧠 Scholastic Aptitude",
-            "subject_aptitude"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "⬅️ Streams",
-            "home_practice"
-          )
-        ]
-      ])
-    );
-  }
-);
-
-bot.action(
-  "practice_social",
-  async ctx => {
-    await ctx.answerCbQuery();
-
-    await ctx.editMessageText(
-      "🌍 SOCIAL SCIENCES\n\nChoose a subject:",
-      Markup.inlineKeyboard([
-        [
-          Markup.button.callback(
-            "📘 English",
-            "subject_social_english"
-          ),
-          Markup.button.callback(
-            "📐 Mathematics",
-            "subject_social_math"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "🌍 Geography",
-            "subject_geography"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "📈 Economics",
-            "subject_economics"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "🏛️ History",
-            "subject_history"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "⬅️ Streams",
-            "home_practice"
-          )
-        ]
-      ])
-    );
-  }
-);
-
-function findQuestionById(id) {
-  return questions.find(
-    question =>
-      question.id === id
-  );
-}
-
-function getQuestionsForSubject(
-  subject
-) {
-  return questions.filter(
-    question =>
-      question.subject ===
-      subject
-  );
-}
-
-function getQuestionForStudent(
-  student,
-  subject
-) {
-  const subjectQuestions =
-    getQuestionsForSubject(
-      subject
-    );
-
-  if (
-    subjectQuestions.length === 0
-  ) {
+  if (!section) {
     return null;
   }
 
-  return subjectQuestions[0];
-}
-
-async function showPracticeQuestion(
-  ctx,
-  subject
-) {
-  const student =
-    await getStudent(ctx);
-
-  const question =
-    getQuestionForStudent(
-      student,
-      subject
+  const progress =
+    getProgress(
+      lesson,
+      state
     );
 
-  if (!question) {
-    await ctx.editMessageText(
-      "✍️ PRACTICE\n\n" +
-        `We're still preparing questions for ${subject}.\n\n` +
-        "More questions will be added to the verified question bank.",
-      Markup.inlineKeyboard([
-        [
-          Markup.button.callback(
-            "⬅️ Practice",
-            "home_practice"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "🏠 Home",
-            "back_home"
-          )
-        ]
-      ])
-    );
+  const labelMap = {
+    introduction:
+      "👋 START HERE",
+    concept:
+      "🧠 CONCEPT",
+    note:
+      "📝 NOTE",
+    example:
+      "💡 EXAMPLE",
+    quick_check:
+      "⚡ QUICK CHECK",
+    application:
+      "🎯 APPLICATION",
+    exam_connection:
+      "📄 EXAM CONNECTION",
+    final_stretch:
+      "🎯 FINAL STRETCH",
+    completion:
+      "🏁 COMPLETE"
+  };
 
-    return;
+  const label =
+    labelMap[section.type] ||
+    String(
+      section.type ||
+        "LESSON"
+    ).toUpperCase();
+
+  let content = "";
+
+  if (
+    typeof section.content ===
+    "string"
+  ) {
+    content =
+      section.content;
+  } else if (
+    section.content
+  ) {
+    content =
+      JSON.stringify(
+        section.content,
+        null,
+        2
+      );
   }
 
-  student.currentQuestionId =
-    question.id;
+  const title =
+    section.title
+      ? `\n<b>${escapeText(
+          section.title
+        )}</b>\n`
+      : "";
 
-  const text =
-    `${question.emoji} ${question.subject.toUpperCase()}\n\n` +
-    "Question\n\n" +
-    question.question;
-
-  await ctx.editMessageText(
-    text,
-    Markup.inlineKeyboard([
-      [
-        Markup.button.callback(
-          question.options[0],
-          `answer_${question.id}_A`
-        )
-      ],
-      [
-        Markup.button.callback(
-          question.options[1],
-          `answer_${question.id}_B`
-        )
-      ],
-      [
-        Markup.button.callback(
-          question.options[2],
-          `answer_${question.id}_C`
-        )
-      ],
-      [
-        Markup.button.callback(
-          question.options[3],
-          `answer_${question.id}_D`
-        )
-      ],
-      [
-        Markup.button.callback(
-          "⬅️ Practice",
-          "home_practice"
-        )
-      ]
-    ])
+  return (
+    `<b>${label}</b>` +
+    title +
+    `\n${escapeText(content)}\n\n` +
+    `📍 ${progress.current}/${progress.total} sections · ${progress.percentage}%`
   );
 }
 
-const subjectActions = {
-  subject_natural_english:
-    "English",
-  subject_natural_math:
-    "Mathematics",
-  subject_biology:
-    "Biology",
-  subject_chemistry:
-    "Chemistry",
-  subject_physics:
-    "Physics",
-  subject_aptitude:
-    "Scholastic Aptitude",
-  subject_social_english:
-    "English",
-  subject_social_math:
-    "Mathematics",
-  subject_geography:
-    "Geography",
-  subject_economics:
-    "Economics",
-  subject_history:
-    "History"
-};
+async function sendLearningSection(
+  ctx,
+  data
+) {
+  const text =
+    learningText(data);
 
-Object.entries(
-  subjectActions
-).forEach(
-  ([action, subject]) => {
-    bot.action(
-      action,
-      async ctx => {
-        await ctx.answerCbQuery();
-
-        await showPracticeQuestion(
-          ctx,
-          subject
-        );
-      }
+  if (!text) {
+    return finishLearning(
+      ctx,
+      data
     );
   }
-);
 
-bot.action(
-  /^answer_(.+)_([ABCD])$/,
-  async ctx => {
-    await ctx.answerCbQuery();
+  return ctx.editMessageText(
+    text,
+    {
+      parse_mode: "HTML",
+      ...learningButton(data)
+    }
+  );
+}
 
-    try {
-      const student =
-        await getStudent(ctx);
+async function startEnglishLesson(
+  ctx,
+  lessonId,
+  track
+) {
+  const result =
+    openEnglishLesson(
+      lessonId
+    );
 
-      const questionId =
-        ctx.match[1];
+  if (
+    !result ||
+    !result.success ||
+    !result.lesson ||
+    !result.session
+  ) {
+    return ctx.answerCbQuery(
+      "The lesson could not be opened."
+    );
+  }
 
-      const selectedAnswer =
-        ctx.match[2];
+  learningSessions.set(
+    String(ctx.from.id),
+    {
+      lessonId,
+      track,
+      lesson:
+        result.lesson,
+      state:
+        result.session.state
+    }
+  );
 
-      const question =
-        findQuestionById(
-          questionId
-        );
+  return sendLearningSection(
+    ctx,
+    learningSessions.get(
+      String(ctx.from.id)
+    )
+  );
+}
 
-      if (!question) {
-        await ctx.editMessageText(
-          "Something went wrong with that question.\n\nLet's try again. 😅",
-          Markup.inlineKeyboard([
-            [
-              Markup.button.callback(
-                "✍️ Practice",
-                "home_practice"
-              )
-            ],
-            [
-              Markup.button.callback(
-                "🏠 Home",
-                "back_home"
-              )
-            ]
-          ])
-        );
+async function continueLearning(
+  ctx
+) {
+  const key =
+    String(ctx.from.id);
 
-        return;
-      }
+  const data =
+    learningSessions.get(
+      key
+    );
 
-      if (
-        student.currentQuestionId !==
-        question.id
-      ) {
-        await ctx.editMessageText(
-          "That question is no longer active.\n\nLet's get you a fresh one. 🧠",
-          Markup.inlineKeyboard([
-            [
-              Markup.button.callback(
-                "✍️ Practice",
-                "home_practice"
-              )
-            ],
-            [
-              Markup.button.callback(
-                "🏠 Home",
-                "back_home"
-              )
-            ]
-          ])
-        );
+  if (!data) {
+    return ctx.answerCbQuery(
+      "Open the lesson first."
+    );
+  }
 
-        return;
-      }
+  if (
+    isLessonFinished(
+      data.state
+    )
+  ) {
+    return finishLearning(
+      ctx,
+      data
+    );
+  }
 
-      const isCorrect =
-        selectedAnswer ===
-        question.correctAnswer;
+  const result =
+    completeCurrentSection(
+      data.lesson,
+      data.state
+    );
 
-      updateStreak(student);
+  if (!result.completed) {
+    return ctx.answerCbQuery(
+      "FineBot could not advance this section."
+    );
+  }
 
-      student.questionsAnswered +=
-        1;
+  data.state =
+    result.state;
 
-      if (
-        !student.subjectProgress[
-          question.subject
-        ]
-      ) {
-        student.subjectProgress[
-          question.subject
-        ] = {
-          answered: 0,
-          correct: 0
-        };
-      }
+  learningSessions.set(
+    key,
+    data
+  );
 
-      student.subjectProgress[
-        question.subject
-      ].answered += 1;
+  if (
+    isLessonFinished(
+      data.state
+    )
+  ) {
+    return finishLearning(
+      ctx,
+      data
+    );
+  }
 
-      if (isCorrect) {
-        student.correctAnswers +=
-          1;
+  return sendLearningSection(
+    ctx,
+    data
+  );
+}
 
-        student.xp += 5;
+async function finishLearning(
+  ctx,
+  data
+) {
+  const student =
+    await getStudent(
+      ctx.from
+    );
 
-        student.subjectProgress[
-          question.subject
-        ].correct += 1;
-      } else {
-        student.mistakes.push({
-          questionId:
-            question.id,
-          subject:
-            question.subject,
-          selectedAnswer,
-          correctAnswer:
-            question.correctAnswer,
-          createdAt:
-            new Date().toISOString()
-        });
-      }
+  if (student) {
+    const alreadyFinished =
+      data.completedReward ===
+      true;
 
-      student.currentQuestionId =
-        null;
+    if (!alreadyFinished) {
+      student.lessons_completed =
+        Number(
+          student.lessons_completed ||
+            0
+        ) + 1;
 
-      const unlocked =
-        updateAchievements(
-          student
-        );
+      student.xp =
+        Number(
+          student.xp || 0
+        ) + 10;
+
+      updateAchievements(
+        student
+      );
 
       await saveStudent(
         student
       );
 
-      const name =
-        await getStudentName(ctx);
+      data.completedReward =
+        true;
 
-      let achievementText =
-        "";
-
-      if (
-        unlocked.length > 0
-      ) {
-        achievementText =
-          "\n\n🏅 Achievement unlocked!\n" +
-          unlocked.join("\n");
-      }
-
-      if (isCorrect) {
-        await ctx.editMessageText(
-          "✅ CORRECT\n\n" +
-            `Nice one, ${name}! 🔥\n\n` +
-            "You got it right.\n\n" +
-            "⭐ +5 XP\n" +
-            `🔥 ${student.streak} day streak\n\n` +
-            `🎯 Accuracy: ${getAccuracy(student)}%` +
-            achievementText,
-          Markup.inlineKeyboard([
-            [
-              Markup.button.callback(
-                "➡️ Next Question",
-                `next_${question.subject}`
-              )
-            ],
-            [
-              Markup.button.callback(
-                "✍️ Practice",
-                "home_practice"
-              )
-            ],
-            [
-              Markup.button.callback(
-                "🏠 Home",
-                "back_home"
-              )
-            ]
-          ])
-        );
-
-        return;
-      }
-
-      await ctx.editMessageText(
-        "❌ NOT QUITE\n\n" +
-          "That's okay. Mistakes are part of learning. 🌱\n\n" +
-          "⭐ +0 XP\n" +
-          `🔥 ${student.streak} day streak\n\n` +
-          `🎯 Accuracy: ${getAccuracy(student)}%` +
-          achievementText,
-        Markup.inlineKeyboard([
-          [
-            Markup.button.callback(
-              "📖 Show me how",
-              `explain_${question.id}`
-            )
-          ],
-          [
-            Markup.button.callback(
-              "➡️ Next Question",
-              `next_${question.subject}`
-            )
-          ],
-          [
-            Markup.button.callback(
-              "✍️ Practice",
-              "home_practice"
-            )
-          ],
-          [
-            Markup.button.callback(
-              "🏠 Home",
-              "back_home"
-            )
-          ]
-        ])
-      );
-    } catch (error) {
-      console.error(
-        "Answer processing error:",
-        error.message
-      );
-
-      await ctx.editMessageText(
-        "I couldn't save that answer right now. 😅\n\nPlease try again.",
-        Markup.inlineKeyboard([
-          [
-            Markup.button.callback(
-              "✍️ Practice",
-              "home_practice"
-            )
-          ],
-          [
-            Markup.button.callback(
-              "🏠 Home",
-              "back_home"
-            )
-          ]
-        ])
+      learningSessions.set(
+        String(ctx.from.id),
+        data
       );
     }
   }
-);
 
-bot.action(
-  /^explain_(.+)$/,
-  async ctx => {
-    await ctx.answerCbQuery();
-
-    const question =
-      findQuestionById(
-        ctx.match[1]
-      );
-
-    if (!question) {
-      await ctx.editMessageText(
-        "I couldn't find that explanation.",
-        Markup.inlineKeyboard([
-          [
-            Markup.button.callback(
-              "✍️ Practice",
-              "home_practice"
-            )
-          ],
-          [
-            Markup.button.callback(
-              "🏠 Home",
-              "back_home"
-            )
-          ]
-        ])
-      );
-
-      return;
-    }
-
-    await ctx.editMessageText(
-      "📖 SHOW ME HOW\n\n" +
-        question.explanation +
-        "\n\n" +
-        `💡 Correct answer: ${question.correctAnswer}`,
-      Markup.inlineKeyboard([
-        [
-          Markup.button.callback(
-            "➡️ Next Question",
-            `next_${question.subject}`
-          )
-        ],
-        [
-          Markup.button.callback(
-            "✍️ Practice",
-            "home_practice"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "🏠 Home",
-            "back_home"
-          )
-        ]
-      ])
-    );
-  }
-);
-
-bot.action(
-  /^next_(.+)$/,
-  async ctx => {
-    await ctx.answerCbQuery();
-
-    await showPracticeQuestion(
-      ctx,
-      ctx.match[1]
-    );
-  }
-);
-
-bot.action(
-  "home_journey",
-  async ctx => {
-    await ctx.answerCbQuery();
-
-    const student =
-      await getStudent(ctx);
-
-    const name =
-      await getStudentName(ctx);
-
-    let achievementText =
-      "None yet — your first one is waiting. 🌱";
-
-    if (
-      student.achievements.length >
-      0
-    ) {
-      achievementText =
-        student.achievements
-          .map(
-            item =>
-              `🏅 ${item}`
-          )
-          .join("\n");
-    }
-
-    await ctx.editMessageText(
-      "📊 MY JOURNEY\n\n" +
-        `${name}'s personal progress\n\n` +
-        `🆔 FineBot ID: ${student.finebotId}\n` +
-        `👤 ${getUsernameText(student)}\n\n` +
-        `⭐ XP: ${student.xp}\n` +
-        `🔥 Streak: ${student.streak} days\n` +
-        `✅ Correct answers: ${student.correctAnswers}\n` +
-        `📝 Questions answered: ${student.questionsAnswered}\n` +
-        `🎯 Accuracy: ${getAccuracy(student)}%\n` +
-        `📚 Lessons completed: ${student.lessonsCompleted}\n\n` +
-        "🏅 ACHIEVEMENTS\n" +
-        achievementText +
-        "\n\n" +
-        "And when something keeps giving you trouble...\n" +
-        "🩹 Fix My Weak will help you work through it.",
-      Markup.inlineKeyboard([
-        [
-          Markup.button.callback(
-            "🩹 Fix My Weak",
-            "journey_weak"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "🏠 Home",
-            "back_home"
-          )
-        ]
-      ])
-    );
-  }
-);
-
-bot.action(
-  "journey_weak",
-  async ctx => {
-    await ctx.answerCbQuery();
-
-    await ctx.editMessageText(
-      "🩹 FIX MY WEAK\n\n" +
-        "FineBot will look at your real practice results to find the areas that need more attention.\n\n" +
-        "No random repetition.\n" +
-        "No shame.\n" +
-        "Just targeted help until things start making sense. 💪\n\n" +
-        "The weakness engine will be connected after the Practice data foundation is complete.",
-      Markup.inlineKeyboard([
+  return ctx.editMessageText(
+    `<b>🎉 Lesson Complete!</b>\n\n` +
+      `You completed:\n` +
+      `<b>${escapeText(
+        data.lesson.title
+      )}</b>\n\n` +
+      `⭐ <b>+10 XP</b>\n` +
+      `📚 Lesson added to your journey.\n\n` +
+      `You just finished your first connected FineBot English lesson.`,
+    {
+      parse_mode: "HTML",
+      ...Markup.inlineKeyboard([
         [
           Markup.button.callback(
             "📊 My Journey",
@@ -2119,56 +1689,101 @@ bot.action(
           )
         ]
       ])
+    }
+  );
+}
+async function showBuddy(
+  ctx,
+  edit = false
+) {
+  const student =
+    await getStudent(
+      ctx.from
+    );
+
+  if (!student) {
+    return ctx.reply(
+      "FineBot could not load your profile."
     );
   }
-);
-EOF
-cat >> api/index.js <<'EOF'
 
-bot.action(
-  "home_buddy",
-  async ctx => {
-    await ctx.answerCbQuery();
+  const today =
+    todayAddis();
 
-    await ctx.editMessageText(
-      "💬 STUDY BUDDY\n\n" +
-        "You can talk naturally here.\n\n" +
-        "Ask something you don't understand.\n" +
-        "Share a random thought.\n" +
-        "Say you're tired.\n" +
-        "Or just type \"hey\".\n\n" +
-        "Your Study Buddy will be connected in a later brick.\n\n" +
-        "And when your brain needs a little refresh...\n" +
-        "📖 Fun Stories will be right here.",
-      Markup.inlineKeyboard([
-        [
-          Markup.button.callback(
-            "📖 Fun Stories",
-            "buddy_stories"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "🏠 Home",
-            "back_home"
-          )
-        ]
-      ])
+  if (
+    student.study_buddy_date !==
+    today
+  ) {
+    student.study_buddy_date =
+      today;
+
+    student.study_buddy_messages_today =
+      0;
+
+    await saveStudent(
+      student
     );
   }
-);
 
-bot.action(
-  "buddy_stories",
-  async ctx => {
-    await ctx.answerCbQuery();
+  const used =
+    Number(
+      student.study_buddy_messages_today ||
+        0
+    );
 
-    await ctx.editMessageText(
-      "📖 FUN STORIES\n\n" +
-        "A little brain refresh between study sessions.\n\n" +
-        "True stories, fascinating facts and just-for-fun moments will live here.\n\n" +
-        "The story system will be connected in a later brick.",
-      Markup.inlineKeyboard([
+  const remaining =
+    Math.max(
+      0,
+      3 - used
+    );
+
+  const text =
+    `<b>💬 Study Buddy</b>\n\n` +
+    `I'm here for your study journey.\n\n` +
+    `You can share a thought, ask a study question, or tell me you're stuck.\n\n` +
+    `💬 Free conversations remaining today: <b>${remaining}</b>`;
+
+  const options = {
+    parse_mode: "HTML",
+    ...Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          "📖 Fun Stories",
+          "buddy_stories"
+        )
+      ],
+      [
+        Markup.button.callback(
+          "🏠 Home",
+          "back_home"
+        )
+      ]
+    ])
+  };
+
+  if (edit) {
+    return ctx.editMessageText(
+      text,
+      options
+    );
+  }
+
+  return ctx.reply(
+    text,
+    options
+  );
+}
+
+async function showStories(
+  ctx
+) {
+  return ctx.editMessageText(
+    `<b>📖 Fun Stories</b>\n\n` +
+      `Your study break space is here.\n\n` +
+      `Short, useful stories will be connected here as the Study Buddy system grows.`,
+    {
+      parse_mode: "HTML",
+      ...Markup.inlineKeyboard([
         [
           Markup.button.callback(
             "💬 Study Buddy",
@@ -2182,6 +1797,179 @@ bot.action(
           )
         ]
       ])
+    }
+  );
+}
+
+async function showSupport(
+  ctx,
+  edit = false
+) {
+  const text =
+    `<b>🆘 Support</b>\n\n` +
+    `Need help with FineBot?\n\n` +
+    `<b>How to use</b>\n` +
+    `📚 Learn — study lessons step by step.\n` +
+    `✍️ Practice — answer questions and build XP.\n` +
+    `📊 My Journey — see your personal progress.\n` +
+    `💬 Study Buddy — get study support.\n\n` +
+    `<b>Contact</b>\n` +
+    `finebot.support@gmail.com`;
+
+  const options = {
+    parse_mode: "HTML",
+    ...Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          "❓ FAQ",
+          "support_faq"
+        )
+      ],
+      [
+        Markup.button.callback(
+          "🏠 Home",
+          "back_home"
+        )
+      ]
+    ])
+  };
+
+  if (edit) {
+    return ctx.editMessageText(
+      text,
+      options
+    );
+  }
+
+  return ctx.reply(
+    text,
+    options
+  );
+}
+
+async function showFaq(
+  ctx
+) {
+  return ctx.editMessageText(
+    `<b>❓ FineBot FAQ</b>\n\n` +
+    `<b>Is FineBot free?</b>\n` +
+    `Yes. The free experience is designed to be useful on its own.\n\n` +
+    `<b>Does FineBot save progress?</b>\n` +
+    `Yes. Your XP, streak, practice history and completed lessons are stored in your student profile.\n\n` +
+    `<b>Can I continue a lesson?</b>\n` +
+    `Yes. FineBot keeps your active lesson session while the bot is running.\n\n` +
+    `<b>Need more help?</b>\n` +
+    `finebot.support@gmail.com`,
+    {
+      parse_mode: "HTML",
+      ...Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            "🆘 Support",
+            "home_support"
+          )
+        ],
+        [
+          Markup.button.callback(
+            "🏠 Home",
+            "back_home"
+          )
+        ]
+      ])
+    }
+  );
+}
+
+bot.start(
+  async ctx => {
+    try {
+      const student =
+        await getStudent(
+          ctx.from
+        );
+
+      if (!student) {
+        return ctx.reply(
+          "FineBot could not create your student profile. Please try again."
+        );
+      }
+
+      return ctx.reply(
+        homeText(student),
+        {
+          parse_mode: "HTML",
+          ...homeKeyboard()
+        }
+      );
+    } catch (error) {
+      console.error(
+        "/start error:",
+        error.message
+      );
+
+      return ctx.reply(
+        "FineBot encountered a temporary problem. Please try again."
+      );
+    }
+  }
+);
+
+bot.action(
+  "back_home",
+  async ctx => {
+    await ctx.answerCbQuery();
+
+    return showHome(
+      ctx,
+      true
+    );
+  }
+);
+
+bot.action(
+  "home_learn",
+  async ctx => {
+    await ctx.answerCbQuery();
+
+    return showLearn(
+      ctx,
+      true
+    );
+  }
+);
+
+bot.action(
+  "home_practice",
+  async ctx => {
+    await ctx.answerCbQuery();
+
+    return showPractice(
+      ctx,
+      true
+    );
+  }
+);
+
+bot.action(
+  "home_journey",
+  async ctx => {
+    await ctx.answerCbQuery();
+
+    return showJourney(
+      ctx,
+      true
+    );
+  }
+);
+
+bot.action(
+  "home_buddy",
+  async ctx => {
+    await ctx.answerCbQuery();
+
+    return showBuddy(
+      ctx,
+      true
     );
   }
 );
@@ -2191,65 +1979,20 @@ bot.action(
   async ctx => {
     await ctx.answerCbQuery();
 
-    await ctx.editMessageText(
-      "🆘 SUPPORT\n\n" +
-        "Need help with FineBot?\n\n" +
-        "You can find:\n" +
-        "• How to Use FineBot\n" +
-        "• Frequently Asked Questions\n" +
-        "• Help with problems or access\n" +
-        "• Direct support\n\n" +
-        "📧 finebot.support@gmail.com",
-      Markup.inlineKeyboard([
-        [
-          Markup.button.callback(
-            "📖 How to Use FineBot",
-            "support_how"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "❓ FAQ",
-            "support_faq"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "🏠 Home",
-            "back_home"
-          )
-        ]
-      ])
+    return showSupport(
+      ctx,
+      true
     );
   }
 );
 
 bot.action(
-  "support_how",
+  "journey_weak",
   async ctx => {
     await ctx.answerCbQuery();
 
-    await ctx.editMessageText(
-      "📖 HOW TO USE FINEBOT\n\n" +
-        "📚 Learn — build understanding step by step.\n\n" +
-        "✍️ Practice — test what you know.\n\n" +
-        "📊 My Journey — see your personal progress.\n\n" +
-        "💬 Study Buddy — talk naturally and get help.\n\n" +
-        "🆘 Support — get help whenever you need it.",
-      Markup.inlineKeyboard([
-        [
-          Markup.button.callback(
-            "⬅️ Support",
-            "home_support"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "🏠 Home",
-            "back_home"
-          )
-        ]
-      ])
+    return showWeak(
+      ctx
     );
   }
 );
@@ -2259,153 +2002,332 @@ bot.action(
   async ctx => {
     await ctx.answerCbQuery();
 
-    await ctx.editMessageText(
-      "❓ FAQ\n\n" +
-        "FineBot is being built as a Grade 12 mastering companion.\n\n" +
-        "The learning, practice, progress, weakness recovery, Study Buddy and story systems are being developed step by step.\n\n" +
-        "For a problem that needs direct help:\n" +
-        "📧 finebot.support@gmail.com",
-      Markup.inlineKeyboard([
-        [
-          Markup.button.callback(
-            "⬅️ Support",
-            "home_support"
-          )
-        ],
-        [
-          Markup.button.callback(
-            "🏠 Home",
-            "back_home"
-          )
-        ]
-      ])
+    return showFaq(
+      ctx
     );
   }
 );
 
 bot.action(
-  "back_home",
+  "buddy_stories",
   async ctx => {
     await ctx.answerCbQuery();
 
-    await showHome(ctx);
+    return showStories(
+      ctx
+    );
+  }
+);
+
+bot.action(
+  "practice_track_Natural",
+  async ctx => {
+    await ctx.answerCbQuery();
+
+    return showPracticeSubjects(
+      ctx,
+      "Natural"
+    );
+  }
+);
+
+bot.action(
+  "practice_track_Social",
+  async ctx => {
+    await ctx.answerCbQuery();
+
+    return showPracticeSubjects(
+      ctx,
+      "Social"
+    );
+  }
+);
+
+bot.action(
+  /^practice_subject_(.+)$/,
+  async ctx => {
+    await ctx.answerCbQuery();
+
+    return openPracticeSubject(
+      ctx,
+      ctx.match[1]
+    );
+  }
+);
+
+bot.action(
+  /^answer_([^_]+)_([A-D])$/,
+  async ctx => {
+    await ctx.answerCbQuery();
+
+    return processAnswer(
+      ctx,
+      ctx.match[1],
+      ctx.match[2]
+    );
+  }
+);
+
+bot.action(
+  /^next_question_(.+)$/,
+  async ctx => {
+    await ctx.answerCbQuery();
+
+    return nextQuestion(
+      ctx,
+      ctx.match[1]
+    );
+  }
+);
+
+bot.action(
+  "learn_track_natural",
+  async ctx => {
+    await ctx.answerCbQuery();
+
+    return showEnglish(
+      ctx,
+      "natural"
+    );
+  }
+);
+
+bot.action(
+  "learn_track_social",
+  async ctx => {
+    await ctx.answerCbQuery();
+
+    return showEnglish(
+      ctx,
+      "social"
+    );
+  }
+);
+
+bot.action(
+  /^learn_open_([^_]+)_(natural|social)$/,
+  async ctx => {
+    await ctx.answerCbQuery();
+
+    return startEnglishLesson(
+      ctx,
+      ctx.match[1],
+      ctx.match[2]
+    );
+  }
+);
+
+bot.action(
+  "learn_continue",
+  async ctx => {
+    await ctx.answerCbQuery();
+
+    return continueLearning(
+      ctx
+    );
   }
 );
 
 bot.on(
-  "callback_query",
+  "text",
   async ctx => {
-    try {
-      await ctx.answerCbQuery(
-        "That little button hasn't learned its trick yet. 😄"
+    const text =
+      String(
+        ctx.message?.text || ""
+      ).trim();
+
+    if (!text) {
+      return;
+    }
+
+    const student =
+      await getStudent(
+        ctx.from
       );
-    } catch (error) {
-      console.error(
-        "Callback error:",
-        error.message
+
+    if (!student) {
+      return ctx.reply(
+        "FineBot could not load your student profile."
       );
     }
+
+    const today =
+      todayAddis();
+
+    if (
+      student.study_buddy_date !==
+      today
+    ) {
+      student.study_buddy_date =
+        today;
+
+      student.study_buddy_messages_today =
+        0;
+    }
+
+    const used =
+      Number(
+        student.study_buddy_messages_today ||
+          0
+      );
+
+    if (used >= 3) {
+      return ctx.reply(
+        `💬 You've used your 3 free Study Buddy conversations for today.\n\nCome back tomorrow and we'll continue.`
+      );
+    }
+
+    student.study_buddy_messages_today =
+      used + 1;
+
+    await saveStudent(
+      student
+    );
+
+    const lower =
+      text.toLowerCase();
+
+    let response =
+      `💬 I hear you.\n\n` +
+      `Take one small step: choose one concept or one question and work on just that.\n\n` +
+      `You don't need to finish everything at once.`;
+
+    if (
+      lower.includes("hello") ||
+      lower.includes("hey") ||
+      lower.includes("hi")
+    ) {
+      response =
+        `👋 Hey ${escapeText(
+          student.first_name
+        )}!\n\n` +
+        `Ready for one small win today?`;
+    } else if (
+      lower.includes("tired") ||
+      lower.includes("stress") ||
+      lower.includes("stuck")
+    ) {
+      response =
+        `🫶 That's a real study moment.\n\n` +
+        `Pause for a minute, breathe, then choose just one small question or concept.\n\n` +
+        `Progress doesn't require a perfect day.`;
+    }
+
+    return ctx.reply(
+      response,
+      {
+        parse_mode: "HTML",
+        ...Markup.inlineKeyboard([
+          [
+            Markup.button.callback(
+              "📚 Learn",
+              "home_learn"
+            ),
+            Markup.button.callback(
+              "✍️ Practice",
+              "home_practice"
+            )
+          ],
+          [
+            Markup.button.callback(
+              "🏠 Home",
+              "back_home"
+            )
+          ]
+        ])
+      }
+    );
   }
 );
 
 bot.catch(
   (error, ctx) => {
     console.error(
-      "FineBot error:",
+      "FineBot bot error:",
       error &&
         error.message
         ? error.message
         : "Unknown error"
     );
 
-    if (
-      ctx &&
-      ctx.callbackQuery
-    ) {
-      ctx
-        .answerCbQuery(
-          "Something went a little sideways. Try again. 😅"
-        )
-        .catch(() => {});
+    if (ctx) {
+      console.error(
+        "Update type:",
+        ctx.updateType ||
+          "unknown"
+      );
     }
   }
 );
 
-module.exports = async (
-  req,
-  res
-) => {
-  if (
-    req.method === "GET"
-  ) {
-    return res
-      .status(200)
-      .send(
-        "FineBot is running."
+module.exports =
+  async (req, res) => {
+    if (req.method === "GET") {
+      return res
+        .status(200)
+        .send(
+          "FineBot is running."
+        );
+    }
+
+    if (req.method !== "POST") {
+      return res
+        .status(405)
+        .send(
+          "Method Not Allowed"
+        );
+    }
+
+    const receivedSecret =
+      req.headers[
+        "x-telegram-bot-api-secret-token"
+      ];
+
+    if (
+      !receivedSecret ||
+      receivedSecret !==
+        SECRET_TOKEN
+    ) {
+      return res
+        .status(401)
+        .send(
+          "Unauthorized"
+        );
+    }
+
+    if (!req.body) {
+      console.error(
+        "Webhook received without request body."
       );
-  }
 
-  if (
-    req.method !== "POST"
-  ) {
-    return res
-      .status(405)
-      .send(
-        "Method Not Allowed"
+      return res
+        .status(400)
+        .send(
+          "Missing request body"
+        );
+    }
+
+    try {
+      await bot.handleUpdate(
+        req.body
       );
-  }
 
-  const receivedSecret =
-    req.headers[
-      "x-telegram-bot-api-secret-token"
-    ];
-
-  if (
-    !receivedSecret ||
-    receivedSecret !==
-      SECRET_TOKEN
-  ) {
-    return res
-      .status(401)
-      .send(
-        "Unauthorized"
+      return res
+        .status(200)
+        .send("OK");
+    } catch (error) {
+      console.error(
+        "FineBot webhook error:",
+        error &&
+          error.message
+          ? error.message
+          : "Unknown error"
       );
-  }
 
-  if (!req.body) {
-    console.error(
-      "Webhook received without request body."
-    );
-
-    return res
-      .status(400)
-      .send(
-        "Missing request body"
-      );
-  }
-
-  try {
-    await bot.handleUpdate(
-      req.body
-    );
-
-    return res
-      .status(200)
-      .send("OK");
-  } catch (error) {
-    console.error(
-      "FineBot webhook error:",
-      error &&
-        error.message
-        ? error.message
-        : "Unknown error"
-    );
-
-    return res
-      .status(500)
-      .send(
-        "Internal Server Error"
-      );
-  }
-};
-EOF
+      return res
+        .status(500)
+        .send(
+          "Internal Server Error"
+        );
+    }
+  };
