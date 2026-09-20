@@ -1,4 +1,4 @@
- const { Telegraf, Markup } = require("telegraf");
+const { Telegraf, Markup } = require("telegraf");
 const { createClient } = require("@supabase/supabase-js");
 
 const {
